@@ -1,6 +1,23 @@
 {
+  "name": "Mon Application Web",
+  "short_name": "MonApp",
+  "start_url": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay"],
-  "scope": "/",
-  "start_url": "./"
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "description": "Mon application de gestion de données personnelles",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
