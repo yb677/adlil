@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+
+  <!-- Indique à iOS que l'app peut s'exécuter en plein écran -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<!-- Change la couleur de la barre de statut (batterie, heure) pour qu'elle s'intègre au design -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- Titre de l'app sur l'écran d'accueil -->
+<meta name="apple-mobile-web-app-title" content="Mon App">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon App PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+    /* 1. Blocage du comportement navigateur sur toute la page */
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        /* Bloque le rafraîchissement vers le bas et le rebond élastique */
+        overscroll-behavior: none;
+        overflow: hidden; 
+        background-color: #f4f7f6;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        /* Empêche la sélection de texte accidentelle */
+        user-select: none;
+        /* Empêche le zoom auto sur les champs de saisie iOS */
+        touch-action: pan-x pan-y;
+    }
+
+    /* 2. Container qui devient la zone de défilement de l'app */
+    .app-container {
+        background: white;
+        padding: 2rem;
+        width: 100%;
+        max-width: 400px;
+        height: 100vh; /* Prend toute la hauteur disponible */
+        overflow-y: auto; /* Permet de scroller uniquement ici si le contenu dépasse */
+        box-sizing: border-box;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* 3. Design des éléments */
+    h2 { color: #333; text-align: center; margin-top: 0; }
+    
+    .form-group { margin-bottom: 15px; }
+    
+    label { display: block; margin-bottom: 5px; color: #666; }
+    
+    input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 16px; /* Taille > 16px évite le zoom auto sur iOS */
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    button:active { 
+        background-color: #0056b3; 
+        transform: scale(0.98); /* Petit effet de pression native */
+    }
+
+    .data-display {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .status { 
+        color: #28a745; 
+        font-weight: bold; 
+        text-align: center; 
+        min-height: 1.2em;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="app-container">
+    <h2>Mes Infos</h2>
+    
+    <form id="userForm">
+        <div class="form-group">
+            <label for="username">Nom complet</label>
+            <input type="text" id="username" placeholder="Ex: Jean Dupont" required>
+        </div>
+        <div class="form-group">
+            <label for="useremail">Email</label>
+            <input type="email" id="useremail" placeholder="Ex: jean@mail.com" required>
+        </div>
+        <button type="submit">Enregistrer les modifications</button>
+    </form>
+
+    <div class="data-display">
+        <p id="statusMsg" class="status"></p>
+        <p><strong>Nom stocké :</strong> <span id="displayName">-</span></p>
+        <p><strong>Email stocké :</strong> <span id="displayEmail">-</span></p>
+    </div>
+</div>
+
+<script>
+    // Éléments du DOM
+    const form = document.getElementById('userForm');
+    const nameInput = document.getElementById('username');
+    const emailInput = document.getElementById('useremail');
+    const displayName = document.getElementById('displayName');
+    const displayEmail = document.getElementById('displayEmail');
+    const statusMsg = document.getElementById('statusMsg');
+
+    // 1. Charger les données au démarrage
+    window.onload = () => {
+        const savedName = localStorage.getItem('pwa_user_name');
+        const savedEmail = localStorage.getItem('pwa_user_email');
+
+        if (savedName) {
+            displayName.innerText = savedName;
+            nameInput.value = savedName;
+        }
+        if (savedEmail) {
+            displayEmail.innerText = savedEmail;
+            emailInput.value = savedEmail;
+        }
+    };
+
+    // 2. Enregistrer et modifier les données
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const name = nameInput.value;
+        const email = emailInput.value;
+
+        // Sauvegarde dans LocalStorage
+        localStorage.setItem('pwa_user_name', name);
+        localStorage.setItem('pwa_user_email', email);
+
+        // Mise à jour de l'affichage
+        displayName.innerText = name;
+        displayEmail.innerText = email;
+
+        // Petit message de succès
+        statusMsg.innerText = "Données mises à jour !";
+        setTimeout(() => statusMsg.innerText = "", 3000);
+    });
+
+    // 3. Enregistrement du Service Worker (pour le mode PWA)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+        .then(() => console.log("Service Worker enregistré !"))
+        .catch(err => console.log("Erreur SW:", err));
+    }
+</script>
+
+</body>
+</html>
+
