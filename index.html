@@ -1,130 +1,116 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-
-
-  <!-- Indique à iOS que l'app peut s'exécuter en plein écran -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<!-- Change la couleur de la barre de statut (batterie, heure) pour qu'elle s'intègre au design -->
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<!-- Titre de l'app sur l'écran d'accueil -->
-<meta name="apple-mobile-web-app-title" content="Mon App">
-
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mon App">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon App PWA</title>
     <link rel="manifest" href="manifest.json">
     <style>
-    /* 1. Blocage du comportement navigateur sur toute la page */
-    html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        /* Bloque le rafraîchissement vers le bas et le rebond élastique */
-        overscroll-behavior: none;
-        overflow: hidden; 
-        background-color: #f4f7f6;
-    }
+        /* 1. Reset & Global */
+        html, body {
+            height: 100%; margin: 0; padding: 0;
+            overscroll-behavior: none; overflow: hidden; 
+            background-color: #f4f7f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        /* Empêche la sélection de texte accidentelle */
-        user-select: none;
-        /* Empêche le zoom auto sur les champs de saisie iOS */
-        touch-action: pan-x pan-y;
-    }
+        body { display: flex; justify-content: center; user-select: none; }
 
-    /* 2. Container qui devient la zone de défilement de l'app */
-    .app-container {
-        background: white;
-        padding: 2rem;
-        width: 100%;
-        max-width: 400px;
-        height: 100vh; /* Prend toute la hauteur disponible */
-        overflow-y: auto; /* Permet de scroller uniquement ici si le contenu dépasse */
-        box-sizing: border-box;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
+        .app-container {
+            background: white; padding: 2rem; width: 100%; max-width: 400px;
+            height: 100vh; overflow-y: auto; box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative; padding-top: 60px; /* Espace pour le bouton burger */
+        }
 
-    /* 3. Design des éléments */
-    h2 { color: #333; text-align: center; margin-top: 0; }
-    
-    .form-group { margin-bottom: 15px; }
-    
-    label { display: block; margin-bottom: 5px; color: #666; }
-    
-    input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-sizing: border-box;
-        font-size: 16px; /* Taille > 16px évite le zoom auto sur iOS */
-    }
+        /* 2. Bouton Burger & Menu */
+        .burger-btn {
+            position: fixed; top: 15px; left: 15px; z-index: 100;
+            font-size: 30px; cursor: pointer; background: white;
+            border-radius: 50%; width: 45px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
 
-    button {
-        width: 100%;
-        padding: 14px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
+        .nav-menu {
+            position: fixed; top: 0; left: -100%; width: 250px; height: 100%;
+            background: white; z-index: 90; transition: 0.3s;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1); padding-top: 80px;
+        }
+        .nav-menu.active { left: 0; }
+        .nav-item { padding: 15px 25px; font-size: 18px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .nav-item:active { background: #f0f0f0; }
 
-    button:active { 
-        background-color: #0056b3; 
-        transform: scale(0.98); /* Petit effet de pression native */
-    }
+        /* 3. Vues */
+        .view { display: none; }
+        .view.active { display: block; }
 
-    .data-display {
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-    }
-
-    .status { 
-        color: #28a745; 
-        font-weight: bold; 
-        text-align: center; 
-        min-height: 1.2em;
-    }
-</style>
-
+        /* 4. Design des composants */
+        h2 { color: #333; text-align: center; margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #666; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .status { color: #28a745; font-weight: bold; text-align: center; min-height: 1.2em; }
+        
+        .welcome-card { text-align: center; margin-top: 50px; }
+        .welcome-card h1 { color: #007bff; }
+    </style>
 </head>
 <body>
 
-<div class="app-container">
-    <h2>Mes Infos</h2>
-    
-    <form id="userForm">
-        <div class="form-group">
-            <label for="username">Nom complet</label>
-            <input type="text" id="username" placeholder="Ex: Jean Dupont" required>
-        </div>
-        <div class="form-group">
-            <label for="useremail">Email</label>
-            <input type="email" id="useremail" placeholder="Ex: jean@mail.com" required>
-        </div>
-        <button type="submit">Enregistrer les modifications</button>
-    </form>
+    <!-- Bouton Burger -->
+    <div class="burger-btn" id="burgerBtn">☰</div>
 
-    <div class="data-display">
-        <p id="statusMsg" class="status"></p>
-        <p><strong>Nom stocké :</strong> <span id="displayName">-</span></p>
-        <p><strong>Email stocké :</strong> <span id="displayEmail">-</span></p>
+    <!-- Menu Latéral -->
+    <nav class="nav-menu" id="sideMenu">
+        <div class="nav-item" onclick="showView('welcome')">🏠 Accueil</div>
+        <div class="nav-item" onclick="showView('app')">📝 Mes Infos</div>
+    </nav>
+
+    <div class="app-container">
+        
+        <!-- VUE 1 : BIENVENUE -->
+        <div id="view-welcome" class="view active">
+            <div class="welcome-card">
+                <h1>Bonjour !</h1>
+                <p id="welcomeUser">Chargement...</p>
+                <button onclick="showView('app')" style="margin-top:20px;">Accéder au formulaire</button>
+            </div>
+        </div>
+
+        <!-- VUE 2 : L'APPLICATION ACTUELLE -->
+        <div id="view-app" class="view">
+            <h2>Mes Infos</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="username">Nom complet</label>
+                    <input type="text" id="username" placeholder="Ex: Jean Dupont" required>
+                </div>
+                <div class="form-group">
+                    <label for="useremail">Email</label>
+                    <input type="email" id="useremail" placeholder="Ex: jean@mail.com" required>
+                </div>
+                <button type="submit">Enregistrer les modifications</button>
+            </form>
+
+            <div class="data-display" style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+                <p id="statusMsg" class="status"></p>
+                <p><strong>Nom stocké :</strong> <span id="displayName">-</span></p>
+                <p><strong>Email stocké :</strong> <span id="displayEmail">-</span></p>
+            </div>
+        </div>
     </div>
-</div>
 
 <script>
-    // Éléments du DOM
+    const burgerBtn = document.getElementById('burgerBtn');
+    const sideMenu = document.getElementById('sideMenu');
+    const welcomeUser = document.getElementById('welcomeUser');
+    
+    // Eléments formulaire
     const form = document.getElementById('userForm');
     const nameInput = document.getElementById('username');
     const emailInput = document.getElementById('useremail');
@@ -132,7 +118,18 @@
     const displayEmail = document.getElementById('displayEmail');
     const statusMsg = document.getElementById('statusMsg');
 
-    // 1. Charger les données au démarrage
+    // --- LOGIQUE NAVIGATION ---
+    
+    burgerBtn.onclick = () => sideMenu.classList.toggle('active');
+
+    function showView(viewId) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + viewId).classList.add('active');
+        sideMenu.classList.remove('active'); // Ferme le menu après clic
+    }
+
+    // --- LOGIQUE DONNÉES ---
+
     window.onload = () => {
         const savedName = localStorage.getItem('pwa_user_name');
         const savedEmail = localStorage.getItem('pwa_user_email');
@@ -140,41 +137,37 @@
         if (savedName) {
             displayName.innerText = savedName;
             nameInput.value = savedName;
+            welcomeUser.innerText = `Ravi de vous revoir, ${savedName}`;
+        } else {
+            welcomeUser.innerText = "Bienvenue, veuillez configurer votre profil.";
         }
+        
         if (savedEmail) {
             displayEmail.innerText = savedEmail;
             emailInput.value = savedEmail;
         }
     };
 
-    // 2. Enregistrer et modifier les données
     form.addEventListener('submit', (e) => {
         e.preventDefault();
-
         const name = nameInput.value;
         const email = emailInput.value;
 
-        // Sauvegarde dans LocalStorage
         localStorage.setItem('pwa_user_name', name);
         localStorage.setItem('pwa_user_email', email);
 
-        // Mise à jour de l'affichage
         displayName.innerText = name;
         displayEmail.innerText = email;
+        welcomeUser.innerText = `Ravi de vous revoir, ${name}`;
 
-        // Petit message de succès
         statusMsg.innerText = "Données mises à jour !";
         setTimeout(() => statusMsg.innerText = "", 3000);
     });
 
-    // 3. Enregistrement du Service Worker (pour le mode PWA)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-        .then(() => console.log("Service Worker enregistré !"))
-        .catch(err => console.log("Erreur SW:", err));
+        navigator.serviceWorker.register('sw.js').catch(err => console.log("Erreur SW:", err));
     }
 </script>
 
 </body>
 </html>
-
