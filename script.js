@@ -1,25 +1,35 @@
+let deferredPrompt;
+let qrcodeInstance = null;
+
 // --- VARIABLES ---
 const installScreen = document.getElementById('install-screen');
-const successScreen = document.getElementById('success-screen');
-const mainApp = document.getElementById('mainApp');
-const burgerBtn = document.getElementById('burgerBtn');
-const sideMenu = document.getElementById('sideMenu');
-let deferredPrompt;
+const msgAndroid = document.getElementById('msg-android');
+const msgIos = document.getElementById('msg-ios');
 
-// --- DÉTECTION PC / MOBILE ---
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 if (!isMobile || isStandalone) {
     showMainApp();
 } else {
+    // Si Mobile non installé
     installScreen.style.display = 'block';
+    
+    if (isIOS) {
+        msgIos.style.display = 'block';
+        msgAndroid.style.display = 'none';
+    } else {
+        msgAndroid.style.display = 'block';
+        msgIos.style.display = 'none';
+    }
 }
 
 function showMainApp() {
-    installScreen.style.display = 'none';
-    mainApp.style.display = 'block';
-    burgerBtn.style.display = 'flex';
+    document.getElementById('install-screen').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('burgerBtn').style.display = 'flex';
 }
 
 // --- INSTALLATION ---
@@ -33,54 +43,40 @@ document.getElementById('btnInstallLarge').onclick = () => {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((res) => {
             if (res.outcome === 'accepted') {
-                installScreen.style.display = 'none';
-                successScreen.style.display = 'block';
+                document.getElementById('install-screen').style.display = 'none';
+                document.getElementById('success-screen').style.display = 'block';
             }
         });
     }
 };
 
 // --- NAVIGATION ---
-burgerBtn.onclick = () => sideMenu.classList.toggle('active');
+document.getElementById('burgerBtn').onclick = () => document.getElementById('sideMenu').classList.toggle('active');
 
-let qrcode = null;
-
-function generateQR() {
-    // 1. Récupération des données du formulaire stockées
-    const name = localStorage.getItem('pwa_user_name') || "";
-    const email = localStorage.getItem('pwa_user_email') || "";
-    const dataString = `Nom: ${name}\nEmail: ${email}`;
-
-    const qrContainer = document.getElementById("qrcode");
-
-    // 2. Initialisation ou mise à jour du QR Code
-    if (!qrcode) {
-        // Premier affichage
-        qrcode = new QRCode(qrContainer, {
-            text: dataString,
-            width: 200,
-            height: 200,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-    } else {
-        // Mise à jour avec les nouvelles données
-        qrcode.clear(); 
-        qrcode.makeCode(dataString);
-    }
-}
-
-// Appeler generateQR() quand on affiche la vue QR
 function showView(viewId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + viewId).classList.add('active');
-    
-    if (viewId === 'qr') {
-        generateQR();
-    }
+    document.getElementById('sideMenu').classList.remove('active');
+    if(viewId === 'qr') generateQR();
 }
 
+// --- LOGIQUE QR CODE ---
+function generateQR() {
+    const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
+    const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
+    const dataString = `Nom: ${name}\nEmail: ${email}`;
+    const container = document.getElementById('qrcode-container');
+    
+    container.innerHTML = ""; 
+    qrcodeInstance = new QRCode(container, {
+        text: dataString,
+        width: 200,
+        height: 200,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+}
 
 // --- FORMULAIRE ---
 document.getElementById('userForm').onsubmit = (e) => {
@@ -90,16 +86,19 @@ document.getElementById('userForm').onsubmit = (e) => {
     localStorage.setItem('pwa_user_name', n);
     localStorage.setItem('pwa_user_email', em);
     document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${n}`;
-    alert("Données sauvegardées !");
+    document.getElementById('statusMsg').innerText = "✓ Enregistré !";
+    setTimeout(() => document.getElementById('statusMsg').innerText = "", 3000);
 };
 
-// --- CHARGEMENT ---
+// --- INITIALISATION ---
 window.onload = () => {
     const n = localStorage.getItem('pwa_user_name');
+    const em = localStorage.getItem('pwa_user_email');
     if (n) {
         document.getElementById('username').value = n;
         document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${n}`;
     }
+    if (em) document.getElementById('useremail').value = em;
 };
 
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
