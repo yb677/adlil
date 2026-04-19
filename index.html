@@ -171,6 +171,37 @@
         navigator.serviceWorker.register('sw.js').catch(err => console.log("Erreur SW:", err));
     }
 </script>
+let deferredPrompt;
+const installBtn = document.getElementById('installApp');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Empêche Chrome d'afficher la bannière automatique par défaut
+  e.preventDefault();
+  // Stocke l'événement pour l'utiliser plus tard
+  deferredPrompt = e;
+  // Affiche votre bouton personnalisé
+  installBtn.style.display = 'block';
+
+  installBtn.addEventListener('click', () => {
+    // Cache le bouton après le clic
+    installBtn.style.display = 'none';
+    // Affiche la boîte de dialogue d'installation native
+    deferredPrompt.prompt();
+    // Attend la réponse de l'utilisateur
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('L’utilisateur a installé la PWA');
+      }
+      deferredPrompt = null;
+    });
+  });
+});
+
+// Optionnel : Cacher le bouton si l'application est déjà installée
+window.addEventListener('appinstalled', () => {
+  installBtn.style.display = 'none';
+  console.log('PWA installée avec succès');
+});
 
 </body>
 </html>
