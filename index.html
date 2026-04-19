@@ -4,25 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Mon App PWA</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
-    <!-- Bibliothèques externes -->
+    <!-- Bibliothèque QR Code -->
     <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
-    <!-- Écrans système -->
+    <!-- Écran Installation (Navigateur Mobile) -->
     <div id="install-screen" class="system-screen">
         <h1>Bienvenue</h1>
         <p>Veuillez installer l'application pour continuer.</p>
         <button id="btnInstallLarge">Installer l'application</button>
-        <div id="ios-instruction">Cliquez sur Partager puis "Sur l'écran d'accueil"</div>
+        <div id="ios-instruction">
+            <p>Sur iPhone :</p>
+            <p>Cliquez sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>.</p>
+        </div>
     </div>
 
+    <!-- Écran Succès -->
     <div id="success-screen" class="system-screen">
-        <h1 style="color: #28a745;">✓ Installé</h1>
-        <p>Fermez ce navigateur et ouvrez l'icône sur votre écran d'accueil.</p>
+        <h1 style="color: #28a745;">✓ Prêt !</h1>
+        <p>L'icône est sur votre écran d'accueil.</p>
+        <p>Fermez ce navigateur et lancez l'application.</p>
     </div>
 
     <!-- Interface App -->
@@ -55,8 +61,8 @@
         <!-- VUE QR CODE -->
         <div id="view-qr" class="view">
             <h2>Mon QR Code</h2>
-    <div id="qrcode"></div> <!-- Le QR code s'affichera ici -->
-    <button class="action-btn" onclick="generateQR()">Actualiser</button>
+            <div id="qrcode-container"></div>
+            <button class="action-btn" onclick="generateQR()" style="margin-top:20px; background:#6c757d;">Actualiser</button>
         </div>
     </div>
 
