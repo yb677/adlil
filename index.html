@@ -1,95 +1,32 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Mon App">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Mon App PWA</title>
     <link rel="manifest" href="manifest.json">
-    <!-- Bibliothèque pour générer le QR Code -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Bibliothèques externes -->
     <script src="https://cloudflare.com"></script>
-    <style>
-        /* 1. Reset & Global */
-        html, body {
-            height: 100%; margin: 0; padding: 0;
-            overscroll-behavior: none; overflow: hidden; 
-            background-color: #f4f7f6;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-        body { display: flex; justify-content: center; align-items: center; user-select: none; }
-
-        /* Écrans d'état */
-        #install-screen, #success-screen { display: none; text-align: center; padding: 2rem; z-index: 200; }
-        
-        #btnInstallLarge {
-            padding: 20px 40px; font-size: 1.2rem; background-color: #28a745;
-            color: white; border: none; border-radius: 50px; font-weight: bold;
-            cursor: pointer; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4); margin-top: 20px;
-        }
-
-        #ios-instruction { display: none; background: #fff; padding: 15px; border-radius: 10px; margin-top: 20px; border: 1px solid #ddd; font-size: 0.9rem; }
-
-        /* 2. Structure App */
-        .app-container {
-            display: none; background: white; padding: 2rem; width: 100%; max-width: 400px;
-            height: 100vh; overflow-y: auto; box-sizing: border-box;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; padding-top: 60px;
-        }
-
-        .burger-btn {
-            display: none; position: fixed; top: 15px; left: 15px; z-index: 100;
-            font-size: 30px; cursor: pointer; background: white;
-            border-radius: 50%; width: 45px; height: 45px;
-            align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .nav-menu {
-            position: fixed; top: 0; left: -100%; width: 250px; height: 100%;
-            background: white; z-index: 90; transition: 0.3s;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1); padding-top: 80px;
-        }
-        .nav-menu.active { left: 0; }
-        .nav-item { padding: 15px 25px; font-size: 18px; cursor: pointer; border-bottom: 1px solid #eee; }
-
-        /* 3. Vues & Composants */
-        .view { display: none; }
-        .view.active { display: block; }
-        h2 { color: #333; text-align: center; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #666; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button.action-btn { width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .status { color: #28a745; font-weight: bold; text-align: center; min-height: 1.2em; }
-        
-        /* QR Code Style */
-        #qrcode { margin-top: 20px; display: flex; justify-content: center; }
-        #qrcode img { border: 10px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    </style>
 </head>
 <body>
 
-    <!-- ÉCRAN D'INSTALLATION -->
-    <div id="install-screen">
+    <!-- Écrans système -->
+    <div id="install-screen" class="system-screen">
         <h1>Bienvenue</h1>
-        <p>Veuillez installer l'application pour accéder à vos informations.</p>
+        <p>Veuillez installer l'application pour continuer.</p>
         <button id="btnInstallLarge">Installer l'application</button>
-        <div id="ios-instruction">
-            <p>Pour installer sur iPhone :</p>
-            <p>Cliquez sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>.</p>
-        </div>
+        <div id="ios-instruction">Cliquez sur Partager puis "Sur l'écran d'accueil"</div>
     </div>
 
-    <!-- ÉCRAN DE SUCCÈS -->
-    <div id="success-screen">
-        <h1 style="color: #28a745;">✓ Prêt à l'emploi</h1>
-        <p>L'icône a été ajoutée à votre écran d'accueil.</p>
-        <p><strong>Étape finale :</strong> Fermez cet onglet et ouvrez l'application via son icône.</p>
+    <div id="success-screen" class="system-screen">
+        <h1 style="color: #28a745;">✓ Installé</h1>
+        <p>Fermez ce navigateur et ouvrez l'icône sur votre écran d'accueil.</p>
     </div>
 
+    <!-- Interface App -->
     <div class="burger-btn" id="burgerBtn">☰</div>
-
     <nav class="nav-menu" id="sideMenu">
         <div class="nav-item" onclick="showView('welcome')">🏠 Accueil</div>
         <div class="nav-item" onclick="showView('app')">📝 Mes Infos</div>
@@ -97,152 +34,32 @@
     </nav>
 
     <div class="app-container" id="mainApp">
-        <!-- VUE 1 : BIENVENUE -->
+        <!-- VUE ACCUEIL -->
         <div id="view-welcome" class="view active">
-            <div class="welcome-card" style="text-align: center; margin-top: 50px;">
-                <h1>Bonjour !</h1>
-                <p id="welcomeUser">Chargement...</p>
-                <button class="action-btn" onclick="showView('app')" style="margin-top:20px;">Accéder au formulaire</button>
-            </div>
+            <h1>Bonjour !</h1>
+            <p id="welcomeUser">Chargement...</p>
+            <button class="action-btn" onclick="showView('app')">Gérer mon profil</button>
         </div>
 
-        <!-- VUE 2 : FORMULAIRE -->
+        <!-- VUE FORMULAIRE -->
         <div id="view-app" class="view">
             <h2>Mes Infos</h2>
             <form id="userForm">
-                <div class="form-group">
-                    <label for="username">Nom complet</label>
-                    <input type="text" id="username" placeholder="Ex: Jean Dupont" required>
-                </div>
-                <div class="form-group">
-                    <label for="useremail">Email</label>
-                    <input type="email" id="useremail" placeholder="Ex: jean@mail.com" required>
-                </div>
-                <button type="submit" class="action-btn">Enregistrer les modifications</button>
+                <input type="text" id="username" placeholder="Nom complet" required>
+                <input type="email" id="useremail" placeholder="Email" required>
+                <button type="submit" class="action-btn">Enregistrer</button>
             </form>
-            <div class="data-display" style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
-                <p id="statusMsg" class="status"></p>
-                <p><strong>Nom stocké :</strong> <span id="displayName">-</span></p>
-                <p><strong>Email stocké :</strong> <span id="displayEmail">-</span></p>
-            </div>
+            <p id="statusMsg" class="status"></p>
         </div>
 
-        <!-- VUE 3 : QR CODE -->
+        <!-- VUE QR CODE -->
         <div id="view-qr" class="view">
             <h2>Mon QR Code</h2>
-            <p style="text-align: center; color: #666;">Scannez ce code pour partager vos informations.</p>
-            <div id="qrcode"></div>
-            <button class="action-btn" onclick="generateQR()" style="margin-top:30px; background-color: #6c757d;">Actualiser le QR Code</button>
+            <div id="qrcode-container"></div>
+            <button class="action-btn" onclick="generateQR()" style="margin-top:20px; background:#6c757d;">Actualiser</button>
         </div>
     </div>
 
-<script>
-    const installScreen = document.getElementById('install-screen');
-    const successScreen = document.getElementById('success-screen');
-    const mainApp = document.getElementById('mainApp');
-    const burgerBtn = document.getElementById('burgerBtn');
-    const sideMenu = document.getElementById('sideMenu');
-    const btnInstallLarge = document.getElementById('btnInstallLarge');
-    let deferredPrompt;
-    let qrGenerator = null;
-
-    // --- LOGIQUE D'AFFICHAGE ---
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    function showMainApp() {
-        installScreen.style.display = 'none';
-        successScreen.style.display = 'none';
-        mainApp.style.display = 'block';
-        burgerBtn.style.display = 'flex';
-    }
-
-    if (!isMobile || isStandalone) {
-        showMainApp();
-    } else {
-        installScreen.style.display = 'block';
-        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-            btnInstallLarge.style.display = 'none';
-            document.getElementById('ios-instruction').style.display = 'block';
-        }
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-    });
-
-    btnInstallLarge.onclick = () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    installScreen.style.display = 'none';
-                    successScreen.style.display = 'block';
-                }
-                deferredPrompt = null;
-            });
-        }
-    };
-
-    // --- NAVIGATION ---
-    burgerBtn.onclick = () => sideMenu.classList.toggle('active');
-
-    function showView(viewId) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-' + viewId).classList.add('active');
-        sideMenu.classList.remove('active');
-        if(viewId === 'qr') generateQR();
-    }
-
-    // --- LOGIQUE QR CODE ---
-    function generateQR() {
-        const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
-        const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
-        const dataString = `Nom: ${name}\nEmail: ${email}`;
-        
-        document.getElementById('qrcode').innerHTML = ""; // Clear
-        qrGenerator = new QRCode(document.getElementById("qrcode"), {
-            text: dataString,
-            width: 200,
-            height: 200,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-    }
-
-    // --- DONNÉES & FORMULAIRE ---
-    window.onload = () => {
-        const savedName = localStorage.getItem('pwa_user_name');
-        const savedEmail = localStorage.getItem('pwa_user_email');
-        if (savedName) {
-            document.getElementById('displayName').innerText = savedName;
-            document.getElementById('username').value = savedName;
-            document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${savedName}`;
-        } else {
-            document.getElementById('welcomeUser').innerText = "Bienvenue, veuillez configurer votre profil.";
-        }
-        if (savedEmail) {
-            document.getElementById('displayEmail').innerText = savedEmail;
-            document.getElementById('useremail').value = savedEmail;
-        }
-    };
-
-    document.getElementById('userForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const n = document.getElementById('username').value;
-        const em = document.getElementById('useremail').value;
-        localStorage.setItem('pwa_user_name', n);
-        localStorage.setItem('pwa_user_email', em);
-        document.getElementById('displayName').innerText = n;
-        document.getElementById('displayEmail').innerText = em;
-        document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${n}`;
-        document.getElementById('statusMsg').innerText = "Données mises à jour !";
-        setTimeout(() => document.getElementById('statusMsg').innerText = "", 3000);
-    });
-
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-</script>
+    <script src="script.js"></script>
 </body>
 </html>
