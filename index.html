@@ -9,236 +9,145 @@
     <title>Mon App PWA</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        /* 1. Reset & Global */
         html, body {
             height: 100%; margin: 0; padding: 0;
             overscroll-behavior: none; overflow: hidden; 
             background-color: #f4f7f6;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-
         body { display: flex; justify-content: center; align-items: center; user-select: none; }
 
         /* Écran d'installation */
-        #install-screen {
-            display: none; 
-            text-align: center;
-            padding: 2rem;
-            z-index: 200;
-        }
-
+        #install-screen { display: none; text-align: center; padding: 2rem; z-index: 200; }
+        
         #btnInstallLarge {
-            padding: 20px 40px;
-            font-size: 1.2rem;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-            margin-top: 20px;
+            padding: 20px 40px; font-size: 1.2rem; background-color: #28a745;
+            color: white; border: none; border-radius: 50px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4); margin-top: 20px;
         }
 
-        /* Message spécifique iOS */
-        #ios-instruction {
-            display: none;
-            background: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            font-size: 0.9rem;
-        }
+        /* Écran de succès après clic */
+        #success-screen { display: none; text-align: center; padding: 2rem; }
 
-        /* 2. Structure App */
-        .app-container {
-            display: none; 
-            background: white; padding: 2rem; width: 100%; max-width: 400px;
-            height: 100vh; overflow-y: auto; box-sizing: border-box;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative; padding-top: 60px;
-        }
+        #ios-instruction { display: none; background: #fff; padding: 15px; border-radius: 10px; margin-top: 20px; border: 1px solid #ddd; }
 
-        .burger-btn {
-            display: none; position: fixed; top: 15px; left: 15px; z-index: 100;
-            font-size: 30px; cursor: pointer; background: white;
-            border-radius: 50%; width: 45px; height: 45px;
-            align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .nav-menu {
-            position: fixed; top: 0; left: -100%; width: 250px; height: 100%;
-            background: white; z-index: 90; transition: 0.3s;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1); padding-top: 80px;
-        }
+        /* Structure App */
+        .app-container { display: none; background: white; padding: 2rem; width: 100%; max-width: 400px; height: 100vh; overflow-y: auto; box-sizing: border-box; position: relative; padding-top: 60px; }
+        .burger-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 100; font-size: 30px; cursor: pointer; background: white; border-radius: 50%; width: 45px; height: 45px; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .nav-menu { position: fixed; top: 0; left: -100%; width: 250px; height: 100%; background: white; z-index: 90; transition: 0.3s; padding-top: 80px; }
         .nav-menu.active { left: 0; }
         .nav-item { padding: 15px 25px; font-size: 18px; cursor: pointer; border-bottom: 1px solid #eee; }
-
         .view { display: none; }
         .view.active { display: block; }
-
-        h2 { color: #333; text-align: center; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #666; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button.action-btn { width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .status { color: #28a745; font-weight: bold; text-align: center; min-height: 1.2em; }
-        
-        .welcome-card { text-align: center; margin-top: 50px; }
-        .welcome-card h1 { color: #007bff; }
+        button.action-btn { width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
+    <!-- 1. ÉCRAN D'INSTALLATION -->
     <div id="install-screen">
         <h1>Bienvenue</h1>
-        <p>Veuillez installer l'application pour accéder à vos informations.</p>
-        
-        <!-- Bouton pour Android/Chrome -->
+        <p>Veuillez installer l'application pour continuer.</p>
         <button id="btnInstallLarge">Installer l'application</button>
-        
-        <!-- Bloc spécifique iPhone -->
         <div id="ios-instruction">
-            <p>Pour installer sur iPhone :</p>
-            <p>1. Cliquez sur le bouton <strong>Partager</strong> <img src="https://icons8.com"/></p>
-            <p>2. Choisissez <strong>"Sur l'écran d'accueil"</strong></p>
+            <p>Sur iPhone : cliquez sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>.</p>
         </div>
     </div>
 
-    <div class="burger-btn" id="burgerBtn">☰</div>
+    <!-- 2. ÉCRAN DE SUCCÈS (Transition) -->
+    <div id="success-screen">
+        <h1 style="color: #28a745;">✓ Installation lancée</h1>
+        <p>L'application est en cours de création sur votre écran d'accueil.</p>
+        <p><strong>Action requise :</strong><br>Quittez votre navigateur et lancez l'application via son icône.</p>
+    </div>
 
+    <!-- 3. L'APPLICATION (MODE INSTALLÉ) -->
+    <div class="burger-btn" id="burgerBtn">☰</div>
     <nav class="nav-menu" id="sideMenu">
         <div class="nav-item" onclick="showView('welcome')">🏠 Accueil</div>
         <div class="nav-item" onclick="showView('app')">📝 Mes Infos</div>
     </nav>
-
     <div class="app-container" id="mainApp">
         <div id="view-welcome" class="view active">
-            <div class="welcome-card">
-                <h1>Bonjour !</h1>
-                <p id="welcomeUser">Chargement...</p>
-                <button class="action-btn" onclick="showView('app')" style="margin-top:20px;">Accéder au formulaire</button>
-            </div>
+            <h1>Bonjour !</h1>
+            <p id="welcomeUser">Chargement...</p>
+            <button class="action-btn" onclick="showView('app')">Mon Profil</button>
         </div>
-
         <div id="view-app" class="view">
             <h2>Mes Infos</h2>
             <form id="userForm">
-                <div class="form-group">
-                    <label for="username">Nom complet</label>
-                    <input type="text" id="username" placeholder="Ex: Jean Dupont" required>
-                </div>
-                <div class="form-group">
-                    <label for="useremail">Email</label>
-                    <input type="email" id="useremail" placeholder="Ex: jean@mail.com" required>
-                </div>
-                <button type="submit" class="action-btn">Enregistrer les modifications</button>
+                <input type="text" id="username" placeholder="Nom" required style="width:100%; padding:10px; margin-bottom:10px;">
+                <input type="email" id="useremail" placeholder="Email" required style="width:100%; padding:10px; margin-bottom:10px;">
+                <button type="submit" class="action-btn">Enregistrer</button>
             </form>
-
-            <div class="data-display" style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
-                <p id="statusMsg" class="status"></p>
-                <p><strong>Nom stocké :</strong> <span id="displayName">-</span></p>
-                <p><strong>Email stocké :</strong> <span id="displayEmail">-</span></p>
-            </div>
         </div>
     </div>
 
 <script>
     const installScreen = document.getElementById('install-screen');
+    const successScreen = document.getElementById('success-screen');
     const mainApp = document.getElementById('mainApp');
     const burgerBtn = document.getElementById('burgerBtn');
-    const sideMenu = document.getElementById('sideMenu');
     const btnInstallLarge = document.getElementById('btnInstallLarge');
-    const iosInstruction = document.getElementById('ios-instruction');
-    
     let deferredPrompt;
 
-    // --- LOGIQUE DE DÉTECTION ---
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    // Initialisation
+    if (!isMobile || isStandalone) {
+        showMainApp(); // Sur PC ou si déjà installé : Accès direct
+    } else {
+        installScreen.style.display = 'block';
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            btnInstallLarge.style.display = 'none';
+            document.getElementById('ios-instruction').style.display = 'block';
+        }
+    }
+
     function showMainApp() {
         installScreen.style.display = 'none';
+        successScreen.style.display = 'none';
         mainApp.style.display = 'block';
         burgerBtn.style.display = 'flex';
     }
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    // TEST : Si PC (non-mobile) OU déjà installé, on montre direct l'app
-    if (!isMobile || isStandalone) {
-        showMainApp();
-    } else if (isIOS) {
-        // Si iPhone (et non installé), on montre les instructions manuelles
-        installScreen.style.display = 'block';
-        btnInstallLarge.style.display = 'none';
-        iosInstruction.style.display = 'block';
-    }
-
-    // Gestion installation Android/Chrome
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        if (!isStandalone && isMobile) {
-            installScreen.style.display = 'block';
-            mainApp.style.display = 'none';
-        }
     });
 
     btnInstallLarge.onclick = () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') showMainApp();
+                if (choiceResult.outcome === 'accepted') {
+                    // Masque l'install et affiche l'écran final
+                    installScreen.style.display = 'none';
+                    successScreen.style.display = 'block';
+                }
                 deferredPrompt = null;
             });
         }
     };
 
-    window.addEventListener('appinstalled', () => showMainApp());
-
-    // --- LOGIQUE FORMULAIRE & NAVIGATION ---
-    burgerBtn.onclick = () => sideMenu.classList.toggle('active');
-
+    // Navigation & Formulaire
+    burgerBtn.onclick = () => document.getElementById('sideMenu').classList.toggle('active');
     function showView(viewId) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-' + viewId).classList.add('active');
-        sideMenu.classList.remove('active');
+        document.getElementById('sideMenu').classList.remove('active');
     }
 
-    window.onload = () => {
-        const savedName = localStorage.getItem('pwa_user_name');
-        const savedEmail = localStorage.getItem('pwa_user_email');
-        if (savedName) {
-            document.getElementById('displayName').innerText = savedName;
-            document.getElementById('username').value = savedName;
-            document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${savedName}`;
-        } else {
-            document.getElementById('welcomeUser').innerText = "Bienvenue, veuillez configurer votre profil.";
-        }
-        if (savedEmail) {
-            document.getElementById('displayEmail').innerText = savedEmail;
-            document.getElementById('useremail').value = savedEmail;
-        }
-    };
-
-    document.getElementById('userForm').addEventListener('submit', (e) => {
+    document.getElementById('userForm').onsubmit = (e) => {
         e.preventDefault();
         const n = document.getElementById('username').value;
-        const em = document.getElementById('useremail').value;
         localStorage.setItem('pwa_user_name', n);
-        localStorage.setItem('pwa_user_email', em);
-        document.getElementById('displayName').innerText = n;
-        document.getElementById('displayEmail').innerText = em;
         document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${n}`;
-        document.getElementById('statusMsg').innerText = "Données mises à jour !";
-        setTimeout(() => document.getElementById('statusMsg').innerText = "", 3000);
-    });
+        alert("Enregistré !");
+    };
 
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
 </html>
