@@ -13,16 +13,25 @@
 </head>
 <body>
 
-    <!-- Écran Installation (Navigateur Mobile) -->
-    <div id="install-screen" class="system-screen">
-        <h1>Bienvenue</h1>
-        <p>Veuillez installer l'application pour continuer.</p>
+<!-- Écran Installation (Dynamique selon l'OS) -->
+<div id="install-screen" class="system-screen">
+    <h1>Bienvenue</h1>
+    
+    <!-- Message pour Android -->
+    <div id="msg-android" style="display:none;">
+        <p>Installez l'application pour un accès rapide et une utilisation hors-ligne.</p>
         <button id="btnInstallLarge">Installer l'application</button>
-        <div id="ios-instruction">
-            <p>Sur iPhone :</p>
-            <p>Cliquez sur <strong>Partager</strong> puis <strong>"Sur l'écran d'accueil"</strong>.</p>
-        </div>
     </div>
+
+    <!-- Message pour iOS (iPhone/iPad) -->
+    <div id="msg-ios" style="display:none;">
+        <p>Installez l'application sur votre iPhone :</p>
+        <p style="font-size: 1.1rem; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #ddd;">
+            1. Cliquez sur le bouton <strong>Partager</strong> <img src="https://icons8.com" style="vertical-align:middle;"/> en bas de Safari.<br><br>
+            2. Choisissez <strong>"Sur l'écran d'accueil"</strong>.
+        </p>
+    </div>
+</div>
 
     <!-- Écran Succès -->
     <div id="success-screen" class="system-screen">
