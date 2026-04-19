@@ -8,6 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon App PWA</title>
     <link rel="manifest" href="manifest.json">
+    <!-- Bibliothèque pour générer le QR Code -->
+    <script src="https://cloudflare.com"></script>
     <style>
         /* 1. Reset & Global */
         html, body {
@@ -29,7 +31,7 @@
 
         #ios-instruction { display: none; background: #fff; padding: 15px; border-radius: 10px; margin-top: 20px; border: 1px solid #ddd; font-size: 0.9rem; }
 
-        /* 2. Structure App (Votre design d'origine) */
+        /* 2. Structure App */
         .app-container {
             display: none; background: white; padding: 2rem; width: 100%; max-width: 400px;
             height: 100vh; overflow-y: auto; box-sizing: border-box;
@@ -51,7 +53,7 @@
         .nav-menu.active { left: 0; }
         .nav-item { padding: 15px 25px; font-size: 18px; cursor: pointer; border-bottom: 1px solid #eee; }
 
-        /* 3. Vues & Composants Formulaire */
+        /* 3. Vues & Composants */
         .view { display: none; }
         .view.active { display: block; }
         h2 { color: #333; text-align: center; margin-top: 0; }
@@ -60,8 +62,10 @@
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         button.action-btn { width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
         .status { color: #28a745; font-weight: bold; text-align: center; min-height: 1.2em; }
-        .welcome-card { text-align: center; margin-top: 50px; }
-        .welcome-card h1 { color: #007bff; }
+        
+        /* QR Code Style */
+        #qrcode { margin-top: 20px; display: flex; justify-content: center; }
+        #qrcode img { border: 10px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -84,25 +88,25 @@
         <p><strong>Étape finale :</strong> Fermez cet onglet et ouvrez l'application via son icône.</p>
     </div>
 
-    <!-- BOUTON BURGER -->
     <div class="burger-btn" id="burgerBtn">☰</div>
 
-    <!-- MENU LATÉRAL -->
     <nav class="nav-menu" id="sideMenu">
         <div class="nav-item" onclick="showView('welcome')">🏠 Accueil</div>
         <div class="nav-item" onclick="showView('app')">📝 Mes Infos</div>
+        <div class="nav-item" onclick="showView('qr')">🖼️ Mon QR Code</div>
     </nav>
 
-    <!-- CONTENEUR PRINCIPAL -->
     <div class="app-container" id="mainApp">
+        <!-- VUE 1 : BIENVENUE -->
         <div id="view-welcome" class="view active">
-            <div class="welcome-card">
+            <div class="welcome-card" style="text-align: center; margin-top: 50px;">
                 <h1>Bonjour !</h1>
                 <p id="welcomeUser">Chargement...</p>
                 <button class="action-btn" onclick="showView('app')" style="margin-top:20px;">Accéder au formulaire</button>
             </div>
         </div>
 
+        <!-- VUE 2 : FORMULAIRE -->
         <div id="view-app" class="view">
             <h2>Mes Infos</h2>
             <form id="userForm">
@@ -122,6 +126,14 @@
                 <p><strong>Email stocké :</strong> <span id="displayEmail">-</span></p>
             </div>
         </div>
+
+        <!-- VUE 3 : QR CODE -->
+        <div id="view-qr" class="view">
+            <h2>Mon QR Code</h2>
+            <p style="text-align: center; color: #666;">Scannez ce code pour partager vos informations.</p>
+            <div id="qrcode"></div>
+            <button class="action-btn" onclick="generateQR()" style="margin-top:30px; background-color: #6c757d;">Actualiser le QR Code</button>
+        </div>
     </div>
 
 <script>
@@ -129,8 +141,10 @@
     const successScreen = document.getElementById('success-screen');
     const mainApp = document.getElementById('mainApp');
     const burgerBtn = document.getElementById('burgerBtn');
+    const sideMenu = document.getElementById('sideMenu');
     const btnInstallLarge = document.getElementById('btnInstallLarge');
     let deferredPrompt;
+    let qrGenerator = null;
 
     // --- LOGIQUE D'AFFICHAGE ---
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
@@ -143,7 +157,6 @@
         burgerBtn.style.display = 'flex';
     }
 
-    // TEST : Si PC ou déjà installé, on bypass l'écran d'install
     if (!isMobile || isStandalone) {
         showMainApp();
     } else {
@@ -172,15 +185,34 @@
         }
     };
 
-    // --- NAVIGATION & FORMULAIRE ---
-    document.getElementById('burgerBtn').onclick = () => document.getElementById('sideMenu').classList.toggle('active');
+    // --- NAVIGATION ---
+    burgerBtn.onclick = () => sideMenu.classList.toggle('active');
 
     function showView(viewId) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-' + viewId).classList.add('active');
-        document.getElementById('sideMenu').classList.remove('active');
+        sideMenu.classList.remove('active');
+        if(viewId === 'qr') generateQR();
     }
 
+    // --- LOGIQUE QR CODE ---
+    function generateQR() {
+        const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
+        const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
+        const dataString = `Nom: ${name}\nEmail: ${email}`;
+        
+        document.getElementById('qrcode').innerHTML = ""; // Clear
+        qrGenerator = new QRCode(document.getElementById("qrcode"), {
+            text: dataString,
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    }
+
+    // --- DONNÉES & FORMULAIRE ---
     window.onload = () => {
         const savedName = localStorage.getItem('pwa_user_name');
         const savedEmail = localStorage.getItem('pwa_user_email');
