@@ -74,16 +74,33 @@ function generateQR() {
     const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
     const data = `NOM: ${name}\nEMAIL: ${email}`;
 
-    // On utilise un service qui génère un QR code sous forme de texte SVG (plus fiable que l'image)
-    // Ici, on va forcer l'affichage via une URL de secours ultra-simple
+    // Tentative de chargement d'image externe
     const qrUrl = `https://qrserver.com{encodeURIComponent(data)}`;
 
     container.innerHTML = `
-        <div style="text-align:center;">
+        <div id="qr-box" style="text-align:center; background:white; padding:15px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:200px; margin:auto;">
             <img src="${qrUrl}" 
-                 id="finalQR"
-                 style="width:200px; height:200px; border:10px solid white; box-shadow:0 4px 10px rgba(0,0,0,0.1);"
-                 onerror="showOfflineQR(this, '${name}', '${email}')">
+                 style="width:200px; height:200px; display:block;"
+                 onerror="generateInternalQR(this, '${name}', '${email}')">
+        </div>`;
+}
+
+// Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
+function generateInternalQR(img, name, email) {
+    const parent = img.parentElement;
+    parent.innerHTML = `
+        <div style="width:200px; height:200px; background:#f0f0f0; border:2px solid #333; position:relative; display:flex; align-items:center; justify-content:center;">
+            <!-- Petit dessin simulant un QR Code -->
+            <div style="position:absolute; top:5px; left:5px; width:40px; height:40px; border:4px solid #333;"></div>
+            <div style="position:absolute; top:5px; right:5px; width:40px; height:40px; border:4px solid #333;"></div>
+            <div style="position:absolute; bottom:5px; left:5px; width:40px; height:40px; border:4px solid #333;"></div>
+            <div style="text-align:center; font-size:12px; font-weight:bold; color:#333; padding:10px;">
+                DÉTAILS<br>AFFICHÉS<br>CI-DESSOUS
+            </div>
+        </div>
+        <div style="margin-top:15px; text-align:left; font-size:14px; border-top:1px solid #eee; padding-top:10px;">
+            <strong>${name}</strong><br>
+            <span style="color:#666; font-size:12px;">${email}</span>
         </div>`;
 }
 

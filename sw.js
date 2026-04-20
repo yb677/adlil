@@ -1,20 +1,18 @@
-const CACHE_NAME = 'mon-app-v5'; // Changez le chiffre ici
+const CACHE_NAME = 'mon-app-vFINAL'; // Changez encore le nom ici
 const ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json'];
 
 self.addEventListener('install', (e) => {
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
-    self.skipWaiting();
 });
 
-self.addEventListener('activate', (e) => {
-    e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)))));
-});
-
-// CETTE PARTIE EST LA PLUS IMPORTANTE
 self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        fetch(event.request).catch(() => {
-            return caches.match(event.request);
-        })
-    );
+    // Si la requête est pour une image externe (QR), on utilise le réseau en priorité
+    if (event.request.url.includes('://qrserver.com') || event.request.url.includes('googleapis')) {
+        event.respondWith(fetch(event.request));
+    } else {
+        // Pour nos fichiers locaux, on utilise le cache
+        event.respondWith(
+            caches.match(event.request).then(response => response || fetch(event.request))
+        );
+    }
 });
