@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mon-app-v4'; // Changez le chiffre ici
+const CACHE_NAME = 'mon-app-v5'; // Changez le chiffre ici
 const ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json'];
 
 self.addEventListener('install', (e) => {
