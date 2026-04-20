@@ -11,6 +11,67 @@ const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+// ============================================================
+// INDEXEDDB INIT
+// ============================================================
+const DB_NAME = 'adlil-db';
+const DB_VERSION = 1;
+const STORE_NAME = 'publications';
+let idb;
+
+function openIDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                store.createIndex('date', 'date', { unique: false });
+            }
+        };
+        req.onsuccess = (e) => { idb = e.target.result; resolve(idb); };
+        req.onerror = (e) => reject(e);
+    });
+}
+
+// ============================================================
+// FIRESTORE SYNC
+// ============================================================
+function getLastSyncDate() {
+    return localStorage.getItem('adlil_last_sync') || null;
+}
+
+function setLastSyncDate(date) {
+    localStorage.setItem('adlil_last_sync', date);
+}
+
+async function syncPublications() {
+    try {
+        let query = db.collection('publications').orderBy('date', 'asc');
+        const lastSync = getLastSyncDate();
+        if (lastSync) {
+            query = query.where('date', '>', new Date(lastSync));
+        }
+        const snapshot = await query.get();
+        if (snapshot.empty) return;
+
+        const tx = idb.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        let lastDate = null;
+
+        snapshot.forEach(doc => {
+            const data = { id: doc.id, ...doc.data(), date: doc.data().date.toDate().toISOString() };
+            store.put(data);
+            lastDate = data.date;
+        });
+
+        if (lastDate) setLastSyncDate(lastDate);
+        console.log(`✅ ${snapshot.size} publication(s) synced`);
+    } catch (err) {
+        console.warn('⚠️ Offline or sync error:', err);
+    }
+}
+
 if (!isMobile || isStandalone) {
     showMainApp();
     iosArrow.style.display = 'none'; // Cacher la flèche si déjà installé
@@ -311,6 +372,8 @@ document.getElementById('userForm').onsubmit = (e) => {
 };
 
 window.onload = () => {
+    await openIDB();
+    await syncPublications();
     const raw = localStorage.getItem('pwa_profile');
     if (!raw) return;
     const d = JSON.parse(raw);
@@ -326,7 +389,58 @@ window.onload = () => {
     if (d.famille) { famille = d.famille; renderFamille(); }
 };
 
-// TEST FIREBASE - remove after test
-db.collection("test").add({ message: "Firebase connected!", date: new Date() })
-  .then(() => console.log("✅ Firebase OK"))
-  .catch((err) => console.error("❌ Firebase error:", err));
+// ============================================================
+// DISPLAY FEED
+// ============================================================
+async function loadFeed() {
+    const container = document.getElementById('feed-container');
+    if (!container) return;
+
+    const tx = idb.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const index = store.index('date');
+    const publications = await new Promise(res => {
+        const req = index.getAll();
+        req.onsuccess = () => res(req.result);
+    });
+
+    if (publications.length === 0) {
+        container.innerHTML = `<p style="color:#999; text-align:center;">Aucune publication.</p>`;
+        return;
+    }
+
+    const readIds = JSON.parse(localStorage.getItem('adlil_read') || '[]');
+    let firstUnreadIndex = -1;
+    let html = '';
+
+    publications.forEach((pub, i) => {
+        const isRead = readIds.includes(pub.id);
+        if (!isRead && firstUnreadIndex === -1) firstUnreadIndex = i;
+        const dateStr = new Date(pub.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+        html += `
+            <div class="pub-bubble ${isRead ? 'pub-read' : 'pub-unread'}" id="pub-${pub.id}" onclick="markRead('${pub.id}')">
+                <div class="pub-type">${pub.type}</div>
+                <div class="pub-contenu">${pub.contenu}</div>
+                <div class="pub-meta">${pub.auteur} · ${dateStr}</div>
+            </div>`;
+    });
+
+    container.innerHTML = html;
+
+    // Mark all as read & scroll to first unread
+    const allIds = publications.map(p => p.id);
+    localStorage.setItem('adlil_read', JSON.stringify(allIds));
+
+    if (firstUnreadIndex !== -1) {
+        const el = document.getElementById('pub-' + publications[firstUnreadIndex].id);
+        if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+    }
+}
+
+function markRead(id) {
+    const readIds = JSON.parse(localStorage.getItem('adlil_read') || '[]');
+    if (!readIds.includes(id)) {
+        readIds.push(id);
+        localStorage.setItem('adlil_read', JSON.stringify(readIds));
+    }
+}

@@ -53,3 +53,13 @@ fieldset input, fieldset select { width: 100%; margin-bottom: 10px; }
 .btn-trash:hover { color: #a71d2a; }
 .action-btn-sm{ background: #fff; border: 1px solid #007bff; color: #007bff; border-radius: 8px; padding: 6px 12px; cursor: pointer; margin: 6px 0; font-size: 14px; }
 .action-btn-sm:hover { background: #e8f0fe; }
+
+#feed-container { display:flex; flex-direction:column; gap:12px; padding:10px 0; }
+
+.pub-bubble { background:#fff; border-radius:12px; padding:12px 15px; 
+              border-left:4px solid #007bff; box-shadow:0 2px 6px rgba(0,0,0,0.08); cursor:pointer; }
+.pub-unread { border-left-color:#007bff; background:#f0f7ff; }
+.pub-read   { border-left-color:#ddd; background:#fff; opacity:0.85; }
+.pub-type   { font-size:11px; text-transform:uppercase; color:#007bff; font-weight:bold; margin-bottom:4px; }
+.pub-contenu{ font-size:15px; color:#333; line-height:1.5; }
+.pub-meta   { font-size:11px; color:#999; margin-top:6px; text-align:right; }
