@@ -53,6 +53,8 @@ async function syncPublications() {
             query = query.where('date', '>', new Date(lastSync));
         }
         const snapshot = await query.get();
+        console.log('snapshot size:', snapshot.size);
+        console.log('lastSync:', lastSync);
         if (snapshot.empty) return;
 
         const tx = idb.transaction(STORE_NAME, 'readwrite');
