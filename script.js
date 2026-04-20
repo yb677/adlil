@@ -371,9 +371,10 @@ document.getElementById('userForm').onsubmit = (e) => {
     setTimeout(() => document.getElementById('statusMsg').innerText = "", 3000);
 };
 
-window.onload = () => {
+window.onload = async () => {
     await openIDB();
     await syncPublications();
+    await loadFeed();
     const raw = localStorage.getItem('pwa_profile');
     if (!raw) return;
     const d = JSON.parse(raw);
