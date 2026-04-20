@@ -5,6 +5,7 @@ let qrcodeInstance = null;
 const installScreen = document.getElementById('install-screen');
 const msgAndroid = document.getElementById('msg-android');
 const msgIos = document.getElementById('msg-ios');
+const iosArrow = document.getElementById('ios-arrow-help');
 
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -12,6 +13,7 @@ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 
 if (!isMobile || isStandalone) {
     showMainApp();
+    iosArrow.style.display = 'none'; // Cacher la flèche si déjà installé
 } else {
     // Si Mobile non installé
     installScreen.style.display = 'block';
@@ -19,9 +21,11 @@ if (!isMobile || isStandalone) {
     if (isIOS) {
         msgIos.style.display = 'block';
         msgAndroid.style.display = 'none';
+        iosArrow.style.display = 'block'; // Afficher la flèche uniquement sur iPhone
     } else {
         msgAndroid.style.display = 'block';
         msgIos.style.display = 'none';
+        iosArrow.style.display = 'none';
     }
 }
 
@@ -30,6 +34,7 @@ function showMainApp() {
     document.getElementById('success-screen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
     document.getElementById('burgerBtn').style.display = 'flex';
+    iosArrow.style.display = 'none'; 
 }
 
 // --- INSTALLATION ---
@@ -63,6 +68,7 @@ function showView(viewId) {
 // --- LOGIQUE QR CODE ---
 function generateQR() {
     const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
+    console.log("Données pour QR:", name); // Si c'est null, le QR peut ne pas s'afficher
     const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
     const dataString = `Nom: ${name}\nEmail: ${email}`;
     const container = document.getElementById('qrcode-container');
