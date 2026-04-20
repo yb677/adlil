@@ -74,8 +74,8 @@ function generateQR() {
     const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
     const data = `NOM: ${name}\nEMAIL: ${email}`;
 
-    // Tentative de chargement d'image externe
-    const qrUrl = `https://qrserver.com{encodeURIComponent(data)}`;
+    // ✅ URL correcte
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data)}`;
 
     container.innerHTML = `
         <div id="qr-box" style="text-align:center; background:white; padding:15px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:200px; margin:auto;">
@@ -158,8 +158,8 @@ window.onload = () => {
 
 //if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
-// Générateur QR ultra-léger intégré
 const QRMaker = (text) => {
     const size = 256;
-    return `https://qrserver.com{size}x${size}&data=${encodeURIComponent(text)}`;
+    // ✅ URL correcte
+    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
 };
