@@ -447,3 +447,8 @@ function markRead(id) {
         localStorage.setItem('adlil_read', JSON.stringify(readIds));
     }
 }
+
+db.collection('publications').get().then(snap => {
+    console.log('Direct test - docs found:', snap.size);
+    snap.forEach(doc => console.log(doc.id, doc.data()));
+}).catch(err => console.error('Direct test error:', err));
