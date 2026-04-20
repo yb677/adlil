@@ -68,31 +68,20 @@ function showView(viewId) {
 
 function generateQR() {
     const container = document.getElementById('qrcode-container');
-    
-    if (typeof QRCode === "undefined") {
-        alert("Erreur : La bibliothèque QR Code n'est pas chargée. Vérifiez votre connexion ou le lien du script.");
-        return;
-    }
-    
     if (!container) return;
 
+    // Récupération des données
     const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
     const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
     
-    // On vide le conteneur proprement
-    container.innerHTML = ""; 
+    // On prépare les données pour l'URL (encodage des espaces, @, etc.)
+    const dataString = encodeURIComponent(`NOM: ${name}\nEMAIL: ${email}`);
 
-    // On force un léger délai pour s'assurer que la vue est affichée
-    setTimeout(() => {
-        new QRCode(container, {
-            text: `NOM: ${name}\nEMAIL: ${email}`,
-            width: 200,
-            height: 200,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-    }, 100);
+    // URL de l'API Google Charts (Génère une image QR Code)
+    const qrUrl = `https://googleapis.com{dataString}&chs=200x200&choe=UTF-8&chld=L|2`;
+
+    // On affiche l'image dans le conteneur
+    container.innerHTML = `<img src="${qrUrl}" alt="Mon QR Code" style="border: 10px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
 }
 
 // --- FORMULAIRE ---

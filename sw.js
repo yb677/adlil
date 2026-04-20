@@ -4,8 +4,7 @@ const ASSETS_TO_CACHE = [
   './index.html',
   './style.css',
   './script.js',
-  './manifest.json',
-  'https://cloudflare.com'
+  './manifest.json'
 ];
 
 // Installation : Mise en cache des fichiers
