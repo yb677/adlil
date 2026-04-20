@@ -74,18 +74,14 @@ function generateQR() {
     const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
     const dataString = `NOM: ${name}\nEMAIL: ${email}`;
 
-    // On crée l'URL de l'image
-    const qrUrl = QRMaker(dataString);
-
-    // On insère l'image avec un ID pour la surveiller
-    container.innerHTML = `<img id="qrImage" src="${qrUrl}" alt="QR Code" style="display:none; border: 10px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
-
-    // On ne l'affiche que lorsqu'elle est vraiment chargée
-    const img = document.getElementById('qrImage');
-    img.onload = () => { img.style.display = 'block'; };
+    container.innerHTML = '<canvas id="qrCanvas"></canvas>';
     
-    // Si l'image échoue, on affiche un texte d'erreur
-    img.onerror = () => { container.innerHTML = "<p style='color:red;'>Erreur de chargement du QR. Vérifiez votre connexion.</p>"; };
+    // On utilise l'API de secours Google Charts en mode "Image directe"
+    // pour éviter les blocages de scripts
+    const qrUrl = "https://googleapis.com" + encodeURIComponent(dataString);
+    
+    container.innerHTML = `<img src="${qrUrl}" style="border:10px solid white; box-shadow:0 4px 10px rgba(0,0,0,0.1);" 
+        onerror="this.src='https://qrserver.com{encodeURIComponent(dataString)}'">`;
 }
 
 // --- FORMULAIRE ---

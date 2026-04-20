@@ -1,44 +1,25 @@
-const CACHE_NAME = 'mon-app-pwa-v2'; // Changez v1 en v2 pour forcer la mise à jour
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './style.css',
-  './script.js',
-  './manifest.json'
-];
+const CACHE_NAME = 'mon-app-v3'; // CHANGEZ LE NOM ICI (v3) pour forcer le navigateur à oublier l'ancien bug
+const ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json'];
 
-// Installation : Mise en cache des fichiers
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
-  self.skipWaiting();
+self.addEventListener('install', (e) => {
+    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+    self.skipWaiting();
 });
 
-// Activation : Nettoyage des anciens caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
-        })
-      );
-    })
-  );
+self.addEventListener('activate', (e) => {
+    e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)))));
 });
 
-// Stratégie de cache : Répondre avec le cache, sinon réseau
+// CETTE PARTIE EST LA PLUS IMPORTANTE
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Si c'est dans le cache, on donne, sinon on va sur Internet
-      return response || fetch(event.request);
-    })
-  );
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            // Si c'est dans le cache (fichiers locaux), on le rend.
+            // Si c'est une URL externe (Google QR), on utilise obligatoirement le réseau (fetch).
+            return response || fetch(event.request).catch(() => {
+                // Option de secours si vraiment hors-ligne
+                return null;
+            });
+        })
+    );
 });
-
