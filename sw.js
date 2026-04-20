@@ -13,6 +13,8 @@ self.addEventListener('activate', (e) => {
 // CETTE PARTIE EST LA PLUS IMPORTANTE
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        fetch(event.request).catch(() => caches.match(event.request))
+        fetch(event.request).catch(() => {
+            return caches.match(event.request);
+        })
     );
 });

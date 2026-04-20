@@ -70,20 +70,37 @@ function generateQR() {
     const container = document.getElementById('qrcode-container');
     if (!container) return;
 
-    const name = localStorage.getItem('pwa_user_name') || "Inconnu";
-    const email = localStorage.getItem('pwa_user_email') || "Inconnu";
-    const data = encodeURIComponent(`NOM: ${name}\nEMAIL: ${email}`);
+    const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
+    const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
+    const data = `NOM: ${name}\nEMAIL: ${email}`;
 
-    // Tentative avec une URL différente (QuickChart est très robuste)
-    const qrUrl = `https://quickchart.io{data}&size=200`;
+    // On utilise un service qui génère un QR code sous forme de texte SVG (plus fiable que l'image)
+    // Ici, on va forcer l'affichage via une URL de secours ultra-simple
+    const qrUrl = `https://qrserver.com{encodeURIComponent(data)}`;
 
     container.innerHTML = `
-        <div style="min-height:200px; display:flex; flex-direction:column; align-items:center;">
+        <div style="text-align:center;">
             <img src="${qrUrl}" 
+                 id="finalQR"
                  style="width:200px; height:200px; border:10px solid white; box-shadow:0 4px 10px rgba(0,0,0,0.1);"
-                 onload="console.log('QR Chargé')"
-                 onerror="showManualQR(this, '${name}', '${email}')">
-            <p id="debug-data" style="font-size:10px; color:gray; margin-top:10px;">Version: ${Date.now()}</p>
+                 onerror="showOfflineQR(this, '${name}', '${email}')">
+        </div>`;
+}
+
+function showOfflineQR(img, name, email) {
+    // Si l'image externe échoue encore, on affiche un QR Code de secours
+    // ou un message stylisé très clair.
+    img.parentElement.innerHTML = `
+        <div style="width:200px; height:200px; background:white; border:2px solid #007bff; display:flex; align-items:center; justify-content:center; padding:10px; box-sizing:border-box;">
+            <div style="text-align:center;">
+                <div style="font-size:40px;">⚠️</div>
+                <p style="font-size:12px; margin:5px 0; color:#333;"><strong>Mode Hors-ligne</strong></p>
+                <p style="font-size:10px; color:#666;">Connectez-vous une fois pour générer l'image.</p>
+            </div>
+        </div>
+        <div style="margin-top:15px; font-size:14px; text-align:left; background:#eee; padding:10px; border-radius:5px;">
+            <strong>Données stockées :</strong><br>
+            ${name}<br>${email}
         </div>`;
 }
 
