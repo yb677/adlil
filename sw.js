@@ -1,26 +1,34 @@
-const CACHE_NAME = 'mon-app-vFINAL'; // Changez encore le nom ici
-const ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json'];
-const CACHE_FILES = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/script.js',
-    '/qrcode.min.js',   // ← ajoute cette ligne
-    '/manifest.json'
+const CACHE_NAME = 'mon-app-v3';
+
+const ASSETS = [
+    './',
+    './index.html',
+    './style.css',
+    './script.js',
+    './manifest.json',
+    './qrcode.min.js'   // ← ajouté ici, dans la bonne liste
 ];
 
 self.addEventListener('install', (e) => {
-    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+    e.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(c => c.addAll(ASSETS))
+            .then(() => self.skipWaiting()) // ← force l'activation immédiate
+    );
 });
 
-self.addEventListener('fetch', (event) => {
-    // Si la requête est pour une image externe (QR), on utilise le réseau en priorité
-    if (event.request.url.includes('://qrserver.com') || event.request.url.includes('googleapis')) {
-        event.respondWith(fetch(event.request));
-    } else {
-        // Pour nos fichiers locaux, on utilise le cache
-        event.respondWith(
-            caches.match(event.request).then(response => response || fetch(event.request))
-        );
-    }
+self.addEventListener('activate', (e) => {
+    // Supprime les anciens caches
+    e.waitUntil(
+        caches.keys().then(keys =>
+            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+        ).then(() => self.clients.claim()) // ← prend le contrôle immédiatement
+    );
+});
+
+self.addEventListener('fetch', (e) => {
+    // Fichiers locaux : cache en priorité
+    e.respondWith(
+        caches.match(e.request).then(cached => cached || fetch(e.request))
+    );
 });
