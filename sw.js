@@ -36,7 +36,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
+      // Si c'est dans le cache, on donne, sinon on va sur Internet
       return response || fetch(event.request);
     })
   );
 });
+
