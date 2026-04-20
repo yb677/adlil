@@ -70,19 +70,40 @@ function generateQR() {
     const container = document.getElementById('qrcode-container');
     if (!container) return;
 
-    const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
-    const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
-    const data = `NOM: ${name}\nEMAIL: ${email}`;
+    const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
+    const nom       = d.nom        || '';
+    const prenom    = d.prenom     || '';
+    const telephone = d.telephone  || '';
+    const datenais  = d.datenaissance || '';
 
-    // ✅ URL correcte
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data)}`;
+    if (!nom && !prenom) {
+        container.innerHTML = `<p style="color:#999; text-align:center;">Aucune donnée. Remplissez d'abord vos infos.</p>`;
+        return;
+    }
 
-    container.innerHTML = `
-        <div id="qr-box" style="text-align:center; background:white; padding:15px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:200px; margin:auto;">
-            <img src="${qrUrl}" 
-                 style="width:200px; height:200px; display:block;"
-                 onerror="generateInternalQR(this, '${name}', '${email}')">
-        </div>`;
+    const data = [
+        `NOM: ${nom}`,
+        `PRENOM: ${prenom}`,
+        `TEL: ${telephone}`,
+        `NAISSANCE: ${datenais}`
+    ].join('\n');
+
+    // Vider le container
+    container.innerHTML = `<div id="qr-canvas" style="display:flex; justify-content:center;"></div>
+        <p style="text-align:center; margin-top:12px; font-size:14px; color:#555;">
+            <strong>${prenom} ${nom}</strong><br>
+            <span style="color:#999; font-size:12px;">${telephone}</span>
+        </p>`;
+
+    // Générer le QR avec la lib locale (100% hors ligne)
+    new QRCode(document.getElementById('qr-canvas'), {
+        text: data,
+        width: 220,
+        height: 220,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
@@ -156,7 +177,7 @@ window.onload = () => {
     if (em) document.getElementById('useremail').value = em;
 };
 
-//if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
 const QRMaker = (text) => {
     const size = 256;
