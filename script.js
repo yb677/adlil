@@ -62,6 +62,7 @@ function showView(viewId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + viewId).classList.add('active');
     document.getElementById('sideMenu').classList.remove('active');
+    console.log("Données pour QR:", viewId); 
     if(viewId === 'qr') generateQR();
 }
 
