@@ -72,16 +72,18 @@ function generateQR() {
 
     const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
     const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
-    const dataString = `NOM: ${name}\nEMAIL: ${email}`;
+    const dataString = encodeURIComponent(`NOM: ${name}\nEMAIL: ${email}`);
 
-    container.innerHTML = '<canvas id="qrCanvas"></canvas>';
-    
-    // On utilise l'API de secours Google Charts en mode "Image directe"
-    // pour éviter les blocages de scripts
-    const qrUrl = "https://googleapis.com" + encodeURIComponent(dataString);
-    
-    container.innerHTML = `<img src="${qrUrl}" style="border:10px solid white; box-shadow:0 4px 10px rgba(0,0,0,0.1);" 
-        onerror="this.src='https://qrserver.com{encodeURIComponent(dataString)}'">`;
+    // On utilise une URL ultra-simple
+    const qrUrl = `https://qrserver.com{dataString}`;
+
+    container.innerHTML = `
+        <div style="background:white; padding:10px;">
+            <img src="${qrUrl}" 
+                 style="width:200px; height:200px; display:block;" 
+                 onload="this.style.border='5px solid green'"
+                 onerror="this.parentElement.innerHTML='<p style=color:red>L\'image du QR est bloquée par le cache ou le réseau.<br>Données : ${decodeURIComponent(dataString)}</p>'">
+        </div>`;
 }
 
 // --- FORMULAIRE ---

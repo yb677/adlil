@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mon-app-v3'; // CHANGEZ LE NOM ICI (v3) pour forcer le navigateur à oublier l'ancien bug
+const CACHE_NAME = 'mon-app-v4'; // Changez le chiffre ici
 const ASSETS = ['./', './index.html', './style.css', './script.js', './manifest.json'];
 
 self.addEventListener('install', (e) => {
@@ -13,13 +13,6 @@ self.addEventListener('activate', (e) => {
 // CETTE PARTIE EST LA PLUS IMPORTANTE
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request).then((response) => {
-            // Si c'est dans le cache (fichiers locaux), on le rend.
-            // Si c'est une URL externe (Google QR), on utilise obligatoirement le réseau (fetch).
-            return response || fetch(event.request).catch(() => {
-                // Option de secours si vraiment hors-ligne
-                return null;
-            });
-        })
+        fetch(event.request).catch(() => caches.match(event.request))
     );
 });
