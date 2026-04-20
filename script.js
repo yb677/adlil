@@ -53,8 +53,6 @@ async function syncPublications() {
             query = query.where('date', '>', new Date(lastSync));
         }
         const snapshot = await query.get();
-        console.log('snapshot size:', snapshot.size);
-        console.log('lastSync:', lastSync);
         if (snapshot.empty) return;
 
         const tx = idb.transaction(STORE_NAME, 'readwrite');
@@ -447,8 +445,3 @@ function markRead(id) {
         localStorage.setItem('adlil_read', JSON.stringify(readIds));
     }
 }
-
-db.collection('publications').get().then(snap => {
-    console.log('Direct test - docs found:', snap.size);
-    snap.forEach(doc => console.log(doc.id, doc.data()));
-}).catch(err => console.error('Direct test error:', err));
