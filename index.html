@@ -54,16 +54,73 @@
             <button class="action-btn" onclick="showView('app')">Gérer mon profil</button>
         </div>
 
-        <!-- VUE FORMULAIRE -->
-        <div id="view-app" class="view">
-            <h2>Mes Infos</h2>
-            <form id="userForm">
-                <input type="text" id="username" placeholder="Nom complet" required>
-                <input type="email" id="useremail" placeholder="Email" required>
-                <button type="submit" class="action-btn">Enregistrer</button>
-            </form>
-            <p id="statusMsg" class="status"></p>
-        </div>
+<!-- VUE FORMULAIRE -->
+<div id="view-app" class="view">
+    <h2>Mes Infos</h2>
+    <form id="userForm">
+
+        <fieldset>
+            <legend>Identité</legend>
+            <input type="text" id="f_nom" placeholder="Nom" required>
+            <input type="text" id="f_prenom" placeholder="Prénom" required>
+            <input type="text" id="f_pere" placeholder="Père">
+            <input type="text" id="f_grandpere" placeholder="Grand-père">
+            <input type="text" id="f_mereNom" placeholder="Nom de la mère">
+            <input type="text" id="f_merePrenom" placeholder="Prénom de la mère">
+            <label for="f_datenaissance">Date de naissance</label>
+            <input type="date" id="f_datenaissance">
+            <label for="f_groupesanguin">Groupe sanguin</label>
+            <select id="f_groupesanguin">
+                <option value="">-- Choisir --</option>
+                <option>A+</option><option>A-</option>
+                <option>B+</option><option>B-</option>
+                <option>AB+</option><option>AB-</option>
+                <option>O+</option><option>O-</option>
+            </select>
+            <input type="tel" id="f_telephone" placeholder="Téléphone">
+        </fieldset>
+
+        <!-- Zone famille dynamique -->
+        <div id="famille-zone"></div>
+
+        <button type="button" class="action-btn" id="btnAddConjoint" onclick="addConjoint()">+ Ajouter un conjoint</button>
+
+        <fieldset>
+            <legend>Situation</legend>
+            <label for="f_familleAlger">Famille à Alger</label>
+            <select id="f_familleAlger">
+                <option value="">-- Choisir --</option>
+                <option value="oui">Oui</option>
+                <option value="non">Non</option>
+            </select>
+            <label for="f_niveauInstruction">Niveau d'instruction</label>
+            <select id="f_niveauInstruction">
+                <option value="">-- Choisir --</option>
+                <option>Primaire</option>
+                <option>Collège</option>
+                <option>Lycée</option>
+                <option>Universitaire</option>
+                <option>Diplômé</option>
+            </select>
+            <input type="text" id="f_profession" placeholder="Profession">
+            <input type="text" id="f_adresseResidence" placeholder="Adresse de résidence">
+            <input type="text" id="f_adresseActivite" placeholder="Adresse d'activité">
+            <label for="f_mokataa">Mokataa</label>
+            <select id="f_mokataa">
+                <option value="">-- Choisir --</option>
+                <option>Alger Centre</option>
+                <option>Belcourt</option>
+                <option>El Harrach</option>
+                <option>El Hamiz</option>
+            </select>
+            <input type="text" id="f_maitrise" placeholder="Maîtrise">
+            <input type="text" id="f_offres" placeholder="Offres">
+        </fieldset>
+
+        <button type="submit" class="action-btn">Enregistrer</button>
+    </form>
+    <p id="statusMsg" class="status"></p>
+</div>
 
         <!-- VUE QR CODE -->
         <div id="view-qr" class="view">

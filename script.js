@@ -163,3 +163,144 @@ const QRMaker = (text) => {
     // ✅ URL correcte
     return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
 };
+
+// ----------- with Claude ----
+
+// ============================================================
+// GESTION FAMILLE (conjoints + enfants)
+// ============================================================
+let famille = []; // tableau de conjoints: { id, nom, prenom, dateNaissance, enfants: [{id,prenom,dateNaissance}] }
+let conjointCounter = 0;
+let enfantCounter = 0;
+
+function renderFamille() {
+    const zone = document.getElementById('famille-zone');
+    const btn = document.getElementById('btnAddConjoint');
+    zone.innerHTML = '';
+
+    famille.forEach((conjoint) => {
+        const hasEnfants = conjoint.enfants.length > 0;
+
+        const cDiv = document.createElement('fieldset');
+        cDiv.innerHTML = `
+            <legend>
+                Conjoint
+                ${!hasEnfants ? `<button type="button" class="btn-trash" onclick="removeConjoint('${conjoint.id}')" title="Supprimer le conjoint">🗑</button>` : ''}
+            </legend>
+            <input type="text" placeholder="Nom" value="${conjoint.nom}" oninput="updateConjoint('${conjoint.id}','nom',this.value)">
+            <input type="text" placeholder="Prénom" value="${conjoint.prenom}" oninput="updateConjoint('${conjoint.id}','prenom',this.value)">
+            <label>Date de naissance</label>
+            <input type="date" value="${conjoint.dateNaissance}" oninput="updateConjoint('${conjoint.id}','dateNaissance',this.value)">
+        `;
+
+        // Enfants du conjoint
+        conjoint.enfants.forEach((enfant) => {
+            const eDiv = document.createElement('div');
+            eDiv.className = 'enfant-row';
+            eDiv.innerHTML = `
+                <button type="button" class="btn-trash" onclick="removeEnfant('${conjoint.id}','${enfant.id}')" title="Supprimer l'enfant">🗑</button>
+                <div class="enfant-fields">
+                    <input type="text" placeholder="Prénom de l'enfant" value="${enfant.prenom}" oninput="updateEnfant('${conjoint.id}','${enfant.id}','prenom',this.value)">
+                    <input type="date" value="${enfant.dateNaissance}" oninput="updateEnfant('${conjoint.id}','${enfant.id}','dateNaissance',this.value)">
+                </div>
+            `;
+            cDiv.appendChild(eDiv);
+        });
+
+        // Bouton ajouter enfant
+        const btnEnfant = document.createElement('button');
+        btnEnfant.type = 'button';
+        btnEnfant.className = 'action-btn-sm';
+        btnEnfant.textContent = '+ Ajouter un enfant';
+        btnEnfant.onclick = () => addEnfant(conjoint.id);
+        cDiv.appendChild(btnEnfant);
+
+        zone.appendChild(cDiv);
+    });
+
+    // Le bouton "Ajouter conjoint" reste TOUJOURS à la fin
+    zone.parentElement.insertBefore(btn, zone.nextSibling);
+}
+
+function addConjoint() {
+    famille.push({ id: 'c' + (++conjointCounter), nom: '', prenom: '', dateNaissance: '', enfants: [] });
+    renderFamille();
+}
+
+function removeConjoint(id) {
+    famille = famille.filter(c => c.id !== id);
+    renderFamille();
+}
+
+function updateConjoint(id, field, val) {
+    const c = famille.find(c => c.id === id);
+    if (c) c[field] = val;
+}
+
+function addEnfant(conjointId) {
+    const c = famille.find(c => c.id === conjointId);
+    if (c) {
+        c.enfants.push({ id: 'e' + (++enfantCounter), prenom: '', dateNaissance: '' });
+        renderFamille();
+    }
+}
+
+function removeEnfant(conjointId, enfantId) {
+    const c = famille.find(c => c.id === conjointId);
+    if (c) {
+        c.enfants = c.enfants.filter(e => e.id !== enfantId);
+        renderFamille();
+    }
+}
+
+function updateEnfant(conjointId, enfantId, field, val) {
+    const c = famille.find(c => c.id === conjointId);
+    if (c) { const e = c.enfants.find(e => e.id === enfantId); if (e) e[field] = val; }
+}
+
+// ============================================================
+// FORMULAIRE — SAVE / LOAD
+// ============================================================
+document.getElementById('userForm').onsubmit = (e) => {
+    e.preventDefault();
+    const data = {
+        nom:               document.getElementById('f_nom').value,
+        prenom:            document.getElementById('f_prenom').value,
+        pere:              document.getElementById('f_pere').value,
+        grandpere:         document.getElementById('f_grandpere').value,
+        mereNom:           document.getElementById('f_mereNom').value,
+        merePrenom:        document.getElementById('f_merePrenom').value,
+        datenaissance:     document.getElementById('f_datenaissance').value,
+        groupesanguin:     document.getElementById('f_groupesanguin').value,
+        telephone:         document.getElementById('f_telephone').value,
+        familleAlger:      document.getElementById('f_familleAlger').value,
+        niveauInstruction: document.getElementById('f_niveauInstruction').value,
+        profession:        document.getElementById('f_profession').value,
+        adresseResidence:  document.getElementById('f_adresseResidence').value,
+        adresseActivite:   document.getElementById('f_adresseActivite').value,
+        mokataa:           document.getElementById('f_mokataa').value,
+        maitrise:          document.getElementById('f_maitrise').value,
+        offres:            document.getElementById('f_offres').value,
+        famille:           famille
+    };
+    localStorage.setItem('pwa_profile', JSON.stringify(data));
+    document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${data.prenom} ${data.nom}`;
+    document.getElementById('statusMsg').innerText = "✓ Enregistré !";
+    setTimeout(() => document.getElementById('statusMsg').innerText = "", 3000);
+};
+
+window.onload = () => {
+    const raw = localStorage.getItem('pwa_profile');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    const fields = ['nom','prenom','pere','grandpere','mereNom','merePrenom',
+                    'datenaissance','groupesanguin','telephone','familleAlger',
+                    'niveauInstruction','profession','adresseResidence',
+                    'adresseActivite','mokataa','maitrise','offres'];
+    fields.forEach(f => {
+        const el = document.getElementById('f_' + f);
+        if (el && d[f]) el.value = d[f];
+    });
+    if (d.nom) document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${d.prenom} ${d.nom}`;
+    if (d.famille) { famille = d.famille; renderFamille(); }
+};
