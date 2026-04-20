@@ -70,19 +70,32 @@ function generateQR() {
     const container = document.getElementById('qrcode-container');
     if (!container) return;
 
-    const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
-    const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
-    const dataString = encodeURIComponent(`NOM: ${name}\nEMAIL: ${email}`);
+    const name = localStorage.getItem('pwa_user_name') || "Inconnu";
+    const email = localStorage.getItem('pwa_user_email') || "Inconnu";
+    const data = encodeURIComponent(`NOM: ${name}\nEMAIL: ${email}`);
 
-    // On utilise une URL ultra-simple
-    const qrUrl = `https://qrserver.com{dataString}`;
+    // Tentative avec une URL différente (QuickChart est très robuste)
+    const qrUrl = `https://quickchart.io{data}&size=200`;
 
     container.innerHTML = `
-        <div style="background:white; padding:10px;">
+        <div style="min-height:200px; display:flex; flex-direction:column; align-items:center;">
             <img src="${qrUrl}" 
-                 style="width:200px; height:200px; display:block;" 
-                 onload="this.style.border='5px solid green'"
-                 onerror="this.parentElement.innerHTML='<p style=color:red>L\'image du QR est bloquée par le cache ou le réseau.<br>Données : ${decodeURIComponent(dataString)}</p>'">
+                 style="width:200px; height:200px; border:10px solid white; box-shadow:0 4px 10px rgba(0,0,0,0.1);"
+                 onload="console.log('QR Chargé')"
+                 onerror="showManualQR(this, '${name}', '${email}')">
+            <p id="debug-data" style="font-size:10px; color:gray; margin-top:10px;">Version: ${Date.now()}</p>
+        </div>`;
+}
+
+function showManualQR(img, name, email) {
+    // Si l'image est bloquée, on affiche les données clairement en texte
+    img.parentElement.innerHTML = `
+        <div style="border:2px dashed #ccc; padding:20px; background:#fff;">
+            <p style="color:red; font-weight:bold;">QR Code non disponible hors-ligne</p>
+            <hr>
+            <p><strong>Données :</strong></p>
+            <p>${name}</p>
+            <p>${email}</p>
         </div>`;
 }
 
@@ -109,7 +122,7 @@ window.onload = () => {
     if (em) document.getElementById('useremail').value = em;
 };
 
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+//if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
 // Générateur QR ultra-léger intégré
 const QRMaker = (text) => {
