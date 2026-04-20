@@ -325,3 +325,8 @@ window.onload = () => {
     if (d.nom) document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${d.prenom} ${d.nom}`;
     if (d.famille) { famille = d.famille; renderFamille(); }
 };
+
+// TEST FIREBASE - remove after test
+db.collection("test").add({ message: "Firebase connected!", date: new Date() })
+  .then(() => console.log("✅ Firebase OK"))
+  .catch((err) => console.error("❌ Firebase error:", err));
