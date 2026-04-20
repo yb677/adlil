@@ -68,6 +68,12 @@ function showView(viewId) {
 
 function generateQR() {
     const container = document.getElementById('qrcode-container');
+    
+    if (typeof QRCode === "undefined") {
+        alert("Erreur : La bibliothèque QR Code n'est pas chargée. Vérifiez votre connexion ou le lien du script.");
+        return;
+    }
+    
     if (!container) return;
 
     const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
