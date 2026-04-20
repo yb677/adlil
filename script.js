@@ -66,23 +66,27 @@ function showView(viewId) {
     if(viewId === 'qr') generateQR();
 }
 
-// --- LOGIQUE QR CODE ---
 function generateQR() {
-    const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
-    console.log("Données pour QR:", name); // Si c'est null, le QR peut ne pas s'afficher
-    const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
-    const dataString = `Nom: ${name}\nEmail: ${email}`;
     const container = document.getElementById('qrcode-container');
+    if (!container) return;
+
+    const name = localStorage.getItem('pwa_user_name') || "Non renseigné";
+    const email = localStorage.getItem('pwa_user_email') || "Non renseigné";
     
+    // On vide le conteneur proprement
     container.innerHTML = ""; 
-    qrcodeInstance = new QRCode(container, {
-        text: dataString,
-        width: 200,
-        height: 200,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
-    });
+
+    // On force un léger délai pour s'assurer que la vue est affichée
+    setTimeout(() => {
+        new QRCode(container, {
+            text: `NOM: ${name}\nEMAIL: ${email}`,
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    }, 100);
 }
 
 // --- FORMULAIRE ---
