@@ -125,6 +125,10 @@ function showView(viewId) {
     document.getElementById('sideMenu').classList.remove('active');
     console.log("Données pour QR:", viewId); 
     if(viewId === 'qr') generateQR();
+    if (viewId === 'welcome') {
+        feedLoaded = false;
+        loadFeed();
+    }
 }
 
 function generateQR() {
@@ -393,7 +397,11 @@ window.onload = async () => {
 // ============================================================
 // DISPLAY FEED
 // ============================================================
+let feedLoaded = false;
+
 async function loadFeed() {
+    if (feedLoaded) return;
+    feedLoaded = true;
     const container = document.getElementById('feed-container');
     if (!container) return;
 
