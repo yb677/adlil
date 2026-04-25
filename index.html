@@ -60,10 +60,31 @@
             border-color: #007bff;
         }
 
-        /* Responsive : une colonne sur très petits écrans */
-        @media (max-width: 400px) {
+        /* Responsive : une colonne uniquement sur écrans très étroits (< 280px) */
+        @media (max-width: 280px) {
             .field-row {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        /* Compacité sur mobile portrait pour que les paires restent lisibles */
+        @media (max-width: 480px) {
+            .field-row {
+                gap: 8px;
+            }
+            .field-group input,
+            .field-group select,
+            .field-full input,
+            .field-full select {
+                font-size: 0.82rem;
+                padding: 6px 8px;
+            }
+            .field-group label,
+            .field-full label {
+                font-size: 0.70rem;
+            }
+            fieldset {
+                padding: 10px;
             }
         }
 
