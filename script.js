@@ -128,6 +128,10 @@ function generateQR() {
     const container = document.getElementById('qrcode-container');
     if (!container) return;
 
+function generateQR() {
+    const container = document.getElementById('qrcode-container');
+    if (!container) return;
+
     const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
     const nom       = d.nom        || '';
     const prenom    = d.prenom     || '';
@@ -224,18 +228,6 @@ function showManualQR(img, name, email) {
             <p>${email}</p>
         </div>`;
 }
-
-// --- FORMULAIRE ---
-document.getElementById('userForm').onsubmit = (e) => {
-    e.preventDefault();
-    const n = document.getElementById('username').value;
-    const em = document.getElementById('useremail').value;
-    localStorage.setItem('pwa_user_name', n);
-    localStorage.setItem('pwa_user_email', em);
-    document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${n}`;
-    document.getElementById('statusMsg').innerText = "✓ Enregistré !";
-    setTimeout(() => document.getElementById('statusMsg').innerText = "", 3000);
-};
 
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
