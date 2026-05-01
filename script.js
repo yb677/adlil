@@ -449,7 +449,7 @@ async function refreshFeed() {
     await loadFeed();
 
     // 2. Si en ligne, synchroniser avec Firestore en arrière-plan
-    if (navigator.onLine) {
+    if (true) { //navigator.onLine) {
         const indicator = document.createElement('div');
         indicator.id = 'sync-indicator';
         indicator.style.cssText = 'text-align:center; font-size:12px; color:#aaa; padding:4px;';
