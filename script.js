@@ -131,6 +131,10 @@ function generateQR() {
     const container = document.getElementById('qrcode-container');
     if (!container) return;
 
+function generateQR() {
+    const container = document.getElementById('qrcode-container');
+    if (!container) return;
+
     const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
     const nom       = d.nom        || '';
     const prenom    = d.prenom     || '';
@@ -149,15 +153,16 @@ function generateQR() {
         `NAISSANCE: ${datenais}`
     ].join('\n');
 
-    // Vider le container
-    container.innerHTML = `<div id="qr-canvas" style="display:flex; justify-content:center;"></div>
-        <p style="text-align:center; margin-top:12px; font-size:14px; color:#555;">
-            <strong>${prenom} ${nom}</strong><br>
-            <span style="color:#999; font-size:12px;">${telephone}</span>
-        </p>`;
+    // Vider complètement le container
+    container.innerHTML = '';
 
-    // Générer le QR avec la lib locale (100% hors ligne)
-    new QRCode(document.getElementById('qr-canvas'), {
+    // Créer le div cible pour la lib QRCode
+    const qrTarget = document.createElement('div');
+    qrTarget.style.cssText = 'display:flex; justify-content:center;';
+    container.appendChild(qrTarget);
+
+    // Générer le QR
+    new QRCode(qrTarget, {
         text: data,
         width: 220,
         height: 220,
@@ -165,6 +170,18 @@ function generateQR() {
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
     });
+
+    // La lib génère un <canvas> ET une <img> superposés — supprimer l'img en trop
+    setTimeout(() => {
+        const img = qrTarget.querySelector('img');
+        if (img) img.remove();
+    }, 100);
+
+    // Nom et téléphone sous le QR
+    const info = document.createElement('p');
+    info.style.cssText = 'text-align:center; margin-top:12px; font-size:14px; color:#555;';
+    info.innerHTML = `<strong>${prenom} ${nom}</strong><br><span style="color:#999; font-size:12px;">${telephone}</span>`;
+    container.appendChild(info);
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
@@ -449,7 +466,7 @@ async function refreshFeed() {
     await loadFeed();
 
     // 2. Si en ligne, synchroniser avec Firestore en arrière-plan
-    if (true) { //navigator.onLine) {
+    if (navigator.onLine) {
         const indicator = document.createElement('div');
         indicator.id = 'sync-indicator';
         indicator.style.cssText = 'text-align:center; font-size:12px; color:#aaa; padding:4px;';
