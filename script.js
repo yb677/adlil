@@ -142,7 +142,7 @@ function generateQR() {
     const datenais  = d.datenaissance || '';
 
     if (!nom && !prenom) {
-        container.innerHTML = `<p style="color:#999; text-align:center;">Aucune donnée. Remplissez d'abord vos infos.</p>`;
+        container.innerHTML = `<p style="color:#999; text-align:center;">لا توجد بيانات. يرجى ملء معلوماتك أولاً.</p>`;
         return;
     }
 
@@ -153,22 +153,51 @@ function generateQR() {
         `NAISSANCE: ${datenais}`
     ].join('\n');
 
-    // Vider le container
-    container.innerHTML = `<div id="qr-canvas" style="display:flex; justify-content:center;"></div>
+    // Vider le container et préparer le canvas
+    container.innerHTML = `
+        <div id="qr-canvas"></div>
         <p style="text-align:center; margin-top:12px; font-size:14px; color:#555;">
             <strong>${prenom} ${nom}</strong><br>
             <span style="color:#999; font-size:12px;">${telephone}</span>
         </p>`;
 
-    // Générer le QR avec la lib locale (100% hors ligne)
-    new QRCode(document.getElementById('qr-canvas'), {
-        text: data,
-        width: 220,
-        height: 220,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    // Délai : laisse le DOM s'afficher avant de dessiner le canvas
+    // Certains navigateurs mobiles échouent si le conteneur n'est pas encore visible
+    setTimeout(() => {
+        const canvas = document.getElementById('qr-canvas');
+        if (!canvas) return;
+
+        try {
+            const qr = new QRCode(canvas, {
+                text: data,
+                width: 220,
+                height: 220,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Vérification après rendu : si canvas vide (bug sur certains Android),
+            // forcer un re-rendu via image base64
+            setTimeout(() => {
+                const cvs = canvas.querySelector('canvas');
+                if (cvs) {
+                    // Remplacer le canvas par une img statique pour éviter les bugs d'affichage
+                    const dataUrl = cvs.toDataURL('image/png');
+                    if (dataUrl && dataUrl.length > 100) {
+                        canvas.innerHTML = `<img src="${dataUrl}" width="220" height="220" style="display:block;" alt="QR Code">`;
+                    }
+                }
+            }, 200);
+
+        } catch(err) {
+            // Fallback : image via API externe si la lib locale échoue
+            console.warn('QRCode lib error:', err);
+            canvas.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data)}"
+                width="220" height="220" alt="QR Code"
+                onerror="this.parentElement.innerHTML='<p style=color:red>QR Code indisponible</p>'">`;
+        }
+    }, 100);
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué

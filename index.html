@@ -100,6 +100,37 @@
             padding: 0 8px;
             color: #333;
         }
+
+        /* RTL pour le formulaire en arabe */
+        #view-app {
+            direction: rtl;
+            text-align: right;
+        }
+        #view-app input,
+        #view-app select {
+            text-align: right;
+            direction: rtl;
+        }
+
+        /* QR Code fix : forcer dimensions visibles */
+        #qrcode-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 240px;
+        }
+        #qr-canvas {
+            display: flex;
+            justify-content: center;
+            min-width: 220px;
+            min-height: 220px;
+        }
+        #qr-canvas canvas,
+        #qr-canvas img {
+            display: block !important;
+            width: 220px !important;
+            height: 220px !important;
+        }
     </style>
 </head>
 <body>
@@ -149,58 +180,58 @@
 
 <!-- VUE FORMULAIRE -->
 <div id="view-app" class="view">
-    <h2>Mes Infos</h2>
+    <h2>معلوماتي</h2>
     <form id="userForm">
 
         <fieldset>
-            <legend>Identité</legend>
+            <legend>الهوية</legend>
 
-            <!-- Nom + Prénom -->
+            <!-- اللقب + الاسم -->
             <div class="field-row">
                 <div class="field-group">
-                    <label for="f_nom">Nom</label>
-                    <input type="text" id="f_nom" placeholder="Nom" required>
+                    <label for="f_nom">اللقب</label>
+                    <input type="text" id="f_nom" placeholder="اللقب" required>
                 </div>
                 <div class="field-group">
-                    <label for="f_prenom">Prénom</label>
-                    <input type="text" id="f_prenom" placeholder="Prénom" required>
+                    <label for="f_prenom">الاسم</label>
+                    <input type="text" id="f_prenom" placeholder="الاسم" required>
                 </div>
             </div>
 
-            <!-- Père + Grand-père -->
+            <!-- الأب + الجد -->
             <div class="field-row">
                 <div class="field-group">
-                    <label for="f_pere">Père</label>
-                    <input type="text" id="f_pere" placeholder="Père">
+                    <label for="f_pere">اسم الأب</label>
+                    <input type="text" id="f_pere" placeholder="اسم الأب">
                 </div>
                 <div class="field-group">
-                    <label for="f_grandpere">Grand-père</label>
-                    <input type="text" id="f_grandpere" placeholder="Grand-père">
+                    <label for="f_grandpere">اسم الجد</label>
+                    <input type="text" id="f_grandpere" placeholder="اسم الجد">
                 </div>
             </div>
 
-            <!-- Nom de la mère + Prénom de la mère -->
+            <!-- لقب الأم + اسم الأم -->
             <div class="field-row">
                 <div class="field-group">
-                    <label for="f_mereNom">Nom de la mère</label>
-                    <input type="text" id="f_mereNom" placeholder="Nom de la mère">
+                    <label for="f_mereNom">لقب الأم</label>
+                    <input type="text" id="f_mereNom" placeholder="لقب الأم">
                 </div>
                 <div class="field-group">
-                    <label for="f_merePrenom">Prénom de la mère</label>
-                    <input type="text" id="f_merePrenom" placeholder="Prénom de la mère">
+                    <label for="f_merePrenom">اسم الأم</label>
+                    <input type="text" id="f_merePrenom" placeholder="اسم الأم">
                 </div>
             </div>
 
-            <!-- Date de naissance + Groupe sanguin -->
+            <!-- تاريخ الميلاد + فصيلة الدم -->
             <div class="field-row">
                 <div class="field-group">
-                    <label for="f_datenaissance">Date de naissance</label>
+                    <label for="f_datenaissance">تاريخ الميلاد</label>
                     <input type="date" id="f_datenaissance">
                 </div>
                 <div class="field-group">
-                    <label for="f_groupesanguin">Groupe sanguin</label>
+                    <label for="f_groupesanguin">فصيلة الدم</label>
                     <select id="f_groupesanguin">
-                        <option value="">-- Choisir --</option>
+                        <option value="">-- اختر --</option>
                         <option>A+</option><option>A-</option>
                         <option>B+</option><option>B-</option>
                         <option>AB+</option><option>AB-</option>
@@ -209,73 +240,60 @@
                 </div>
             </div>
 
-            <!-- Téléphone (seul) -->
+            <!-- رقم الهاتف -->
             <div class="field-full">
-                <label for="f_telephone">Téléphone</label>
-                <input type="tel" id="f_telephone" placeholder="Téléphone">
+                <label for="f_telephone">رقم الهاتف</label>
+                <input type="tel" id="f_telephone" placeholder="رقم الهاتف" dir="ltr">
             </div>
         </fieldset>
 
-        <!-- Zone famille dynamique (conjoint/enfants ajoutés par JS) -->
-        <!-- Le script doit générer les champs conjoint et enfants
-             avec la même structure .field-row / .field-group :
-
-             Conjoint : [Nom + Prénom] sur une ligne
-             Enfant   : [Prénom + Date de naissance] sur une ligne
-        -->
         <div id="famille-zone"></div>
 
-        <button type="button" class="action-btn" id="btnAddConjoint" onclick="addConjoint()">+ Ajouter un conjoint</button>
+        <button type="button" class="action-btn" id="btnAddConjoint" onclick="addConjoint()">+ إضافة زوج/زوجة</button>
 
         <fieldset>
-            <legend>Situation</legend>
+            <legend>الوضعية</legend>
 
-            <!-- Famille à Alger (seule) -->
             <div class="field-full">
-                <label for="f_familleAlger">Famille à Alger</label>
+                <label for="f_familleAlger">عائلة في الجزائر</label>
                 <select id="f_familleAlger">
-                    <option value="">-- Choisir --</option>
-                    <option value="oui">Oui</option>
-                    <option value="non">Non</option>
+                    <option value="">-- اختر --</option>
+                    <option value="oui">نعم</option>
+                    <option value="non">لا</option>
                 </select>
             </div>
 
-            <!-- Niveau d'instruction (seul) -->
             <div class="field-full">
-                <label for="f_niveauInstruction">Niveau d'instruction</label>
+                <label for="f_niveauInstruction">المستوى الدراسي</label>
                 <select id="f_niveauInstruction">
-                    <option value="">-- Choisir --</option>
-                    <option>Primaire</option>
-                    <option>Collège</option>
-                    <option>Lycée</option>
-                    <option>Universitaire</option>
-                    <option>Diplômé</option>
+                    <option value="">-- اختر --</option>
+                    <option>ابتدائي</option>
+                    <option>متوسط</option>
+                    <option>ثانوي</option>
+                    <option>جامعي</option>
+                    <option>متخرج</option>
                 </select>
             </div>
 
-            <!-- Profession (seule) -->
             <div class="field-full">
-                <label for="f_profession">Profession</label>
-                <input type="text" id="f_profession" placeholder="Profession">
+                <label for="f_profession">المهنة</label>
+                <input type="text" id="f_profession" placeholder="المهنة">
             </div>
 
-            <!-- Adresse résidence (seule) -->
             <div class="field-full">
-                <label for="f_adresseResidence">Adresse de résidence</label>
-                <input type="text" id="f_adresseResidence" placeholder="Adresse de résidence">
+                <label for="f_adresseResidence">عنوان الإقامة</label>
+                <input type="text" id="f_adresseResidence" placeholder="عنوان الإقامة">
             </div>
 
-            <!-- Adresse activité (seule) -->
             <div class="field-full">
-                <label for="f_adresseActivite">Adresse d'activité</label>
-                <input type="text" id="f_adresseActivite" placeholder="Adresse d'activité">
+                <label for="f_adresseActivite">عنوان النشاط</label>
+                <input type="text" id="f_adresseActivite" placeholder="عنوان النشاط">
             </div>
 
-            <!-- Mokataa (seule) -->
             <div class="field-full">
-                <label for="f_mokataa">Mokataa</label>
+                <label for="f_mokataa">المقاطعة</label>
                 <select id="f_mokataa">
-                    <option value="">-- Choisir --</option>
+                    <option value="">-- اختر --</option>
                     <option>Alger Centre</option>
                     <option>Belcourt</option>
                     <option>El Harrach</option>
@@ -283,20 +301,18 @@
                 </select>
             </div>
 
-            <!-- Maîtrise (seule) -->
             <div class="field-full">
-                <label for="f_maitrise">Maîtrise</label>
-                <input type="text" id="f_maitrise" placeholder="Maîtrise">
+                <label for="f_maitrise">الإتقان</label>
+                <input type="text" id="f_maitrise" placeholder="الإتقان">
             </div>
 
-            <!-- Offres (seule) -->
             <div class="field-full">
-                <label for="f_offres">Offres</label>
-                <input type="text" id="f_offres" placeholder="Offres">
+                <label for="f_offres">العروض</label>
+                <input type="text" id="f_offres" placeholder="العروض">
             </div>
         </fieldset>
 
-        <button type="submit" class="action-btn">Enregistrer</button>
+        <button type="submit" class="action-btn">حفظ</button>
     </form>
     <p id="statusMsg" class="status"></p>
 </div>
