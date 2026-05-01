@@ -397,7 +397,9 @@ window.onload = async () => {
 // Affiche les publications depuis IndexedDB (cache local)
 async function loadFeed() {
     const container = document.getElementById('feed-container');
-    if (!container) return;
+    if (!container) { console.error('❌ feed-container introuvable dans loadFeed'); return; }
+
+    console.log('📂 loadFeed() — lecture IndexedDB...');
 
     const tx = idb.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
@@ -406,6 +408,8 @@ async function loadFeed() {
         const req = index.getAll();
         req.onsuccess = () => res(req.result);
     });
+
+    console.log('📄 publications trouvées :', publications.length);
 
     if (publications.length === 0) {
         container.innerHTML = `<p style="color:#999; text-align:center;">Aucune publication.</p>`;
@@ -444,7 +448,11 @@ async function loadFeed() {
 // Appelée à chaque affichage de la vue Accueil
 async function refreshFeed() {
     const container = document.getElementById('feed-container');
-    if (!container) return;
+    if (!container) { console.error('❌ feed-container introuvable'); return; }
+
+    console.log('🔄 refreshFeed() démarré');
+    console.log('📶 navigator.onLine =', navigator.onLine);
+    console.log('🗄️ idb =', idb);
 
     // 1. Afficher le cache local immédiatement (sans attendre le réseau)
     await loadFeed();
@@ -458,17 +466,19 @@ async function refreshFeed() {
         container.prepend(indicator);
 
         try {
-            await syncPublications(); // récupère les nouvelles données depuis Firestore
-
-            // 3. Recharger l'affichage avec les données fraîches
+            console.log('☁️ syncPublications() en cours...');
+            await syncPublications();
+            console.log('✅ syncPublications() terminé');
             await loadFeed();
+            console.log('✅ loadFeed() après sync terminé');
         } catch (err) {
-            console.warn('Sync failed:', err);
+            console.error('❌ Sync failed:', err);
         } finally {
-            // Supprimer l'indicateur de sync
             const ind = document.getElementById('sync-indicator');
             if (ind) ind.remove();
         }
+    } else {
+        console.warn('📵 Hors ligne — cache uniquement');
     }
 }
 
