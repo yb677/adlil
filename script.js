@@ -131,10 +131,6 @@ function generateQR() {
     const container = document.getElementById('qrcode-container');
     if (!container) return;
 
-function generateQR() {
-    const container = document.getElementById('qrcode-container');
-    if (!container) return;
-
     const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
     const nom       = d.nom        || '';
     const prenom    = d.prenom     || '';
