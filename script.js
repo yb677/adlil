@@ -72,17 +72,14 @@ async function syncPublications() {
     }
 }
 
-if (!isMobile || isStandalone) {
-    showMainApp();
-    iosArrow.style.display = 'none'; // Cacher la flèche si déjà installé
-} else {
-    // Si Mobile non installé
+// L'affichage de l'app est géré dans window.onload après init IDB
+if (isMobile && !isStandalone) {
+    // Mobile non installé : afficher l'écran d'installation
     installScreen.style.display = 'block';
-    
     if (isIOS) {
         msgIos.style.display = 'block';
         msgAndroid.style.display = 'none';
-        iosArrow.style.display = 'block'; // Afficher la flèche uniquement sur iPhone
+        iosArrow.style.display = 'block';
     } else {
         msgAndroid.style.display = 'block';
         msgIos.style.display = 'none';
@@ -240,17 +237,6 @@ document.getElementById('userForm').onsubmit = (e) => {
     setTimeout(() => document.getElementById('statusMsg').innerText = "", 3000);
 };
 
-// --- INITIALISATION ---
-window.onload = () => {
-    const n = localStorage.getItem('pwa_user_name');
-    const em = localStorage.getItem('pwa_user_email');
-    if (n) {
-        document.getElementById('username').value = n;
-        document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${n}`;
-    }
-    if (em) document.getElementById('useremail').value = em;
-};
-
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
 const QRMaker = (text) => {
@@ -385,8 +371,22 @@ document.getElementById('userForm').onsubmit = (e) => {
 };
 
 window.onload = async () => {
+    // 1. Initialiser IndexedDB en tout premier
     await openIDB();
-    await refreshFeed(); // affiche le cache + sync réseau en arrière-plan
+
+    // 2. Afficher l'interface si conditions remplies
+    if (!isMobile || isStandalone) {
+        showMainApp();
+        iosArrow.style.display = 'none';
+    }
+
+    // 3. Enregistrer le Service Worker
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+
+    // 4. Charger le feed (cache immédiat + sync réseau)
+    await refreshFeed();
+
+    // 5. Recharger le profil utilisateur dans le formulaire
     const raw = localStorage.getItem('pwa_profile');
     if (!raw) return;
     const d = JSON.parse(raw);
@@ -398,7 +398,7 @@ window.onload = async () => {
         const el = document.getElementById('f_' + f);
         if (el && d[f]) el.value = d[f];
     });
-    if (d.nom) document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${d.prenom} ${d.nom}`;
+    if (d.nom) document.getElementById('welcomeUser').innerText = `مرحباً بك، ${d.prenom} ${d.nom}`;
     if (d.famille) { famille = d.famille; renderFamille(); }
 };
 
