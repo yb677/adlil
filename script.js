@@ -123,12 +123,8 @@ function showView(viewId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + viewId).classList.add('active');
     document.getElementById('sideMenu').classList.remove('active');
-    console.log("Données pour QR:", viewId); 
-    if(viewId === 'qr') generateQR();
-    if (viewId === 'welcome') {
-        feedLoaded = false;
-        loadFeed();
-    }
+    if (viewId === 'qr') generateQR();
+    if (viewId === 'welcome') refreshFeed();
 }
 
 function generateQR() {
@@ -142,7 +138,7 @@ function generateQR() {
     const datenais  = d.datenaissance || '';
 
     if (!nom && !prenom) {
-        container.innerHTML = `<p style="color:#999; text-align:center;">لا توجد بيانات. يرجى ملء معلوماتك أولاً.</p>`;
+        container.innerHTML = `<p style="color:#999; text-align:center;">Aucune donnée. Remplissez d'abord vos infos.</p>`;
         return;
     }
 
@@ -153,51 +149,22 @@ function generateQR() {
         `NAISSANCE: ${datenais}`
     ].join('\n');
 
-    // Vider le container et préparer le canvas
-    container.innerHTML = `
-        <div id="qr-canvas"></div>
+    // Vider le container
+    container.innerHTML = `<div id="qr-canvas" style="display:flex; justify-content:center;"></div>
         <p style="text-align:center; margin-top:12px; font-size:14px; color:#555;">
             <strong>${prenom} ${nom}</strong><br>
             <span style="color:#999; font-size:12px;">${telephone}</span>
         </p>`;
 
-    // Délai : laisse le DOM s'afficher avant de dessiner le canvas
-    // Certains navigateurs mobiles échouent si le conteneur n'est pas encore visible
-    setTimeout(() => {
-        const canvas = document.getElementById('qr-canvas');
-        if (!canvas) return;
-
-        try {
-            const qr = new QRCode(canvas, {
-                text: data,
-                width: 220,
-                height: 220,
-                colorDark: '#000000',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
-            });
-
-            // Vérification après rendu : si canvas vide (bug sur certains Android),
-            // forcer un re-rendu via image base64
-            setTimeout(() => {
-                const cvs = canvas.querySelector('canvas');
-                if (cvs) {
-                    // Remplacer le canvas par une img statique pour éviter les bugs d'affichage
-                    const dataUrl = cvs.toDataURL('image/png');
-                    if (dataUrl && dataUrl.length > 100) {
-                        canvas.innerHTML = `<img src="${dataUrl}" width="220" height="220" style="display:block;" alt="QR Code">`;
-                    }
-                }
-            }, 200);
-
-        } catch(err) {
-            // Fallback : image via API externe si la lib locale échoue
-            console.warn('QRCode lib error:', err);
-            canvas.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data)}"
-                width="220" height="220" alt="QR Code"
-                onerror="this.parentElement.innerHTML='<p style=color:red>QR Code indisponible</p>'">`;
-        }
-    }, 100);
+    // Générer le QR avec la lib locale (100% hors ligne)
+    new QRCode(document.getElementById('qr-canvas'), {
+        text: data,
+        width: 220,
+        height: 220,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
@@ -406,8 +373,7 @@ document.getElementById('userForm').onsubmit = (e) => {
 
 window.onload = async () => {
     await openIDB();
-    await syncPublications();
-    await loadFeed();
+    await refreshFeed(); // affiche le cache + sync réseau en arrière-plan
     const raw = localStorage.getItem('pwa_profile');
     if (!raw) return;
     const d = JSON.parse(raw);
@@ -426,11 +392,9 @@ window.onload = async () => {
 // ============================================================
 // DISPLAY FEED
 // ============================================================
-let feedLoaded = false;
 
+// Affiche les publications depuis IndexedDB (cache local)
 async function loadFeed() {
-    if (feedLoaded) return;
-    feedLoaded = true;
     const container = document.getElementById('feed-container');
     if (!container) return;
 
@@ -465,13 +429,45 @@ async function loadFeed() {
 
     container.innerHTML = html;
 
-    // Mark all as read & scroll to first unread
+    // Marquer tout comme lu et scroller vers le premier non lu
     const allIds = publications.map(p => p.id);
     localStorage.setItem('adlil_read', JSON.stringify(allIds));
 
     if (firstUnreadIndex !== -1) {
         const el = document.getElementById('pub-' + publications[firstUnreadIndex].id);
         if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+    }
+}
+
+// Stratégie : cache immédiat + sync réseau en arrière-plan
+// Appelée à chaque affichage de la vue Accueil
+async function refreshFeed() {
+    const container = document.getElementById('feed-container');
+    if (!container) return;
+
+    // 1. Afficher le cache local immédiatement (sans attendre le réseau)
+    await loadFeed();
+
+    // 2. Si en ligne, synchroniser avec Firestore en arrière-plan
+    if (navigator.onLine) {
+        const indicator = document.createElement('div');
+        indicator.id = 'sync-indicator';
+        indicator.style.cssText = 'text-align:center; font-size:12px; color:#aaa; padding:4px;';
+        indicator.textContent = '🔄 Mise à jour...';
+        container.prepend(indicator);
+
+        try {
+            await syncPublications(); // récupère les nouvelles données depuis Firestore
+
+            // 3. Recharger l'affichage avec les données fraîches
+            await loadFeed();
+        } catch (err) {
+            console.warn('Sync failed:', err);
+        } finally {
+            // Supprimer l'indicateur de sync
+            const ind = document.getElementById('sync-indicator');
+            if (ind) ind.remove();
+        }
     }
 }
 
