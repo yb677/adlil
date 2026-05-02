@@ -39,50 +39,38 @@ function openIDB() {
 // ============================================================
 async function syncPublications() {
     try {
-        // Récupérer TOUTES les publications depuis Firestore
         const snapshot = await db.collection('publications').orderBy('date', 'asc').get();
 
-        // Vider complètement IndexedDB avant de réécrire
-        // Cela supprime les publications effacées du serveur
+        // Vider IndexedDB complètement avant de réécrire (supprime les docs effacés)
         await new Promise((resolve, reject) => {
             const tx = idb.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.clear();
+            const req = tx.objectStore(STORE_NAME).clear();
             req.onsuccess = () => resolve();
             req.onerror = () => reject(req.error);
         });
 
-        if (snapshot.empty) {
-            console.log('ℹ️ Aucune publication sur le serveur');
-            return;
-        }
+        if (snapshot.empty) { console.log('ℹ️ Aucune publication'); return; }
 
-        // Réécrire toutes les publications fraîches
         await new Promise((resolve, reject) => {
             const tx = idb.transaction(STORE_NAME, 'readwrite');
             const store = tx.objectStore(STORE_NAME);
             snapshot.forEach(doc => {
-                const data = { id: doc.id, ...doc.data(), date: doc.data().date.toDate().toISOString() };
-                store.put(data);
+                store.put({ id: doc.id, ...doc.data(), date: doc.data().date.toDate().toISOString() });
             });
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
         });
 
-        // Réinitialiser la date de sync et les IDs lus
-        localStorage.removeItem('adlil_last_sync');
         localStorage.removeItem('adlil_read');
-
-        console.log(`✅ ${snapshot.size} publication(s) synchronisée(s) depuis le serveur`);
+        console.log(`✅ ${snapshot.size} publication(s) synchronisée(s)`);
     } catch (err) {
-        console.warn('⚠️ Erreur de sync:', err);
-        throw err; // remonter l'erreur pour que refreshFeed puisse la catcher
+        console.warn('⚠️ Sync error:', err);
+        throw err;
     }
 }
 
-// L'affichage de l'app est géré dans window.onload après init IDB
+// Écran installation mobile (l'app est affichée dans window.onload après init IDB)
 if (isMobile && !isStandalone) {
-    // Mobile non installé : afficher l'écran d'installation
     installScreen.style.display = 'block';
     if (isIOS) {
         msgIos.style.display = 'block';
@@ -143,53 +131,62 @@ function generateQR() {
     const datenais  = d.datenaissance || '';
 
     if (!nom && !prenom) {
-        container.innerHTML = `<p style="color:#999; text-align:center;">Aucune donnée. Remplissez d'abord vos infos.</p>`;
+        container.innerHTML = `<p style="color:#999; text-align:center;">لا توجد بيانات. يرجى ملء معلوماتك أولاً.</p>`;
         return;
     }
 
-    const data = encodeURIComponent([
+    const data = [
         `NOM: ${nom}`,
         `PRENOM: ${prenom}`,
         `TEL: ${telephone}`,
         `NAISSANCE: ${datenais}`
-    ].join('\n'));
+    ].join('\n');
 
-    const info = `<p style="text-align:center; margin-top:12px; font-size:14px; color:#555;">
-        <strong>${prenom} ${nom}</strong><br>
-        <span style="color:#999; font-size:12px;">${telephone}</span>
-    </p>`;
+    // Vider le container et préparer le canvas
+    container.innerHTML = `
+        <div id="qr-canvas"></div>
+        <p style="text-align:center; margin-top:12px; font-size:14px; color:#555;">
+            <strong>${prenom} ${nom}</strong><br>
+            <span style="color:#999; font-size:12px;">${telephone}</span>
+        </p>`;
 
-    const cacheKey = 'qr_cache_' + nom + prenom;
-    const cached = localStorage.getItem(cacheKey);
+    // Délai : laisse le DOM s'afficher avant de dessiner le canvas
+    // Certains navigateurs mobiles échouent si le conteneur n'est pas encore visible
+    setTimeout(() => {
+        const canvas = document.getElementById('qr-canvas');
+        if (!canvas) return;
 
-    if (cached) {
-        // Afficher immédiatement depuis le cache
-        container.innerHTML = `<img src="${cached}" width="220" height="220" style="display:block; margin:0 auto;">` + info;
-    } else {
-        container.innerHTML = `<p style="color:#aaa; text-align:center;">⏳ Génération...</p>`;
-    }
+        try {
+            const qr = new QRCode(canvas, {
+                text: data,
+                width: 220,
+                height: 220,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
 
-    if (!navigator.onLine) return;
+            // Vérification après rendu : si canvas vide (bug sur certains Android),
+            // forcer un re-rendu via image base64
+            setTimeout(() => {
+                const cvs = canvas.querySelector('canvas');
+                if (cvs) {
+                    // Remplacer le canvas par une img statique pour éviter les bugs d'affichage
+                    const dataUrl = cvs.toDataURL('image/png');
+                    if (dataUrl && dataUrl.length > 100) {
+                        canvas.innerHTML = `<img src="${dataUrl}" width="220" height="220" style="display:block;" alt="QR Code">`;
+                    }
+                }
+            }, 200);
 
-    // Charger depuis l'API et mettre en cache en base64
-    const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${data}&format=png`;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-        // Convertir en base64 pour le cache hors-ligne
-        const cvs = document.createElement('canvas');
-        cvs.width = 220; cvs.height = 220;
-        cvs.getContext('2d').drawImage(img, 0, 0, 220, 220);
-        const b64 = cvs.toDataURL('image/png');
-        localStorage.setItem(cacheKey, b64);
-        container.innerHTML = `<img src="${b64}" width="220" height="220" style="display:block; margin:0 auto;">` + info;
-    };
-    img.onerror = () => {
-        if (!cached) {
-            container.innerHTML = `<p style="color:#e74c3c; text-align:center;">❌ QR indisponible hors-ligne</p>` + info;
+        } catch(err) {
+            // Fallback : image via API externe si la lib locale échoue
+            console.warn('QRCode lib error:', err);
+            canvas.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data)}"
+                width="220" height="220" alt="QR Code"
+                onerror="this.parentElement.innerHTML='<p style=color:red>QR Code indisponible</p>'">`;
         }
-    };
-    img.src = apiUrl;
+    }, 100);
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
@@ -240,6 +237,7 @@ function showManualQR(img, name, email) {
         </div>`;
 }
 
+// --- INITIALISATION ---
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
 const QRMaker = (text) => {
@@ -374,22 +372,12 @@ document.getElementById('userForm').onsubmit = (e) => {
 };
 
 window.onload = async () => {
-    // 1. Initialiser IndexedDB en tout premier
     await openIDB();
-
-    // 2. Afficher l'interface si conditions remplies
     if (!isMobile || isStandalone) {
         showMainApp();
         iosArrow.style.display = 'none';
     }
-
-    // 3. Enregistrer le Service Worker
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-
-    // 4. Charger le feed (cache immédiat + sync réseau)
     await refreshFeed();
-
-    // 5. Recharger le profil utilisateur dans le formulaire
     const raw = localStorage.getItem('pwa_profile');
     if (!raw) return;
     const d = JSON.parse(raw);
@@ -409,13 +397,9 @@ window.onload = async () => {
 // DISPLAY FEED
 // ============================================================
 
-// Affiche les publications depuis IndexedDB (cache local)
 async function loadFeed() {
     const container = document.getElementById('feed-container');
-    if (!container) { console.error('❌ feed-container introuvable dans loadFeed'); return; }
-
-    console.log('📂 loadFeed() — lecture IndexedDB...');
-
+    if (!container) return;
     const tx = idb.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
     const index = store.index('date');
@@ -423,18 +407,13 @@ async function loadFeed() {
         const req = index.getAll();
         req.onsuccess = () => res(req.result);
     });
-
-    console.log('📄 publications trouvées :', publications.length);
-
     if (publications.length === 0) {
         container.innerHTML = `<p style="color:#999; text-align:center;">Aucune publication.</p>`;
         return;
     }
-
     const readIds = JSON.parse(localStorage.getItem('adlil_read') || '[]');
     let firstUnreadIndex = -1;
     let html = '';
-
     publications.forEach((pub, i) => {
         const isRead = readIds.includes(pub.id);
         if (!isRead && firstUnreadIndex === -1) firstUnreadIndex = i;
@@ -446,54 +425,33 @@ async function loadFeed() {
                 <div class="pub-meta">${pub.auteur} · ${dateStr}</div>
             </div>`;
     });
-
     container.innerHTML = html;
-
-    // Marquer tout comme lu et scroller vers le premier non lu
     const allIds = publications.map(p => p.id);
     localStorage.setItem('adlil_read', JSON.stringify(allIds));
-
     if (firstUnreadIndex !== -1) {
         const el = document.getElementById('pub-' + publications[firstUnreadIndex].id);
         if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
     }
 }
 
-// Stratégie : cache immédiat + sync réseau en arrière-plan
-// Appelée à chaque affichage de la vue Accueil
 async function refreshFeed() {
     const container = document.getElementById('feed-container');
-    if (!container) { console.error('❌ feed-container introuvable'); return; }
-
-    console.log('🔄 refreshFeed() démarré');
-    console.log('📶 navigator.onLine =', navigator.onLine);
-    console.log('🗄️ idb =', idb);
-
-    // 1. Afficher le cache local immédiatement (sans attendre le réseau)
+    if (!container) return;
     await loadFeed();
-
-    // 2. Si en ligne, synchroniser avec Firestore en arrière-plan
-    if (navigator.onLine) {
-        const indicator = document.createElement('div');
-        indicator.id = 'sync-indicator';
-        indicator.style.cssText = 'text-align:center; font-size:12px; color:#aaa; padding:4px;';
-        indicator.textContent = '🔄 Mise à jour...';
-        container.prepend(indicator);
-
-        try {
-            console.log('☁️ syncPublications() en cours...');
-            await syncPublications();
-            console.log('✅ syncPublications() terminé');
-            await loadFeed();
-            console.log('✅ loadFeed() après sync terminé');
-        } catch (err) {
-            console.error('❌ Sync failed:', err);
-        } finally {
-            const ind = document.getElementById('sync-indicator');
-            if (ind) ind.remove();
-        }
-    } else {
-        console.warn('📵 Hors ligne — cache uniquement');
+    if (!navigator.onLine) return;
+    const indicator = document.createElement('div');
+    indicator.id = 'sync-indicator';
+    indicator.style.cssText = 'text-align:center;font-size:12px;color:#aaa;padding:4px;';
+    indicator.textContent = '🔄 Mise à jour...';
+    container.prepend(indicator);
+    try {
+        await syncPublications();
+        await loadFeed();
+    } catch (err) {
+        console.warn('Sync failed:', err);
+    } finally {
+        const ind = document.getElementById('sync-indicator');
+        if (ind) ind.remove();
     }
 }
 
