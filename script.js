@@ -37,38 +37,46 @@ function openIDB() {
 // ============================================================
 // FIRESTORE SYNC
 // ============================================================
-function getLastSyncDate() {
-    return localStorage.getItem('adlil_last_sync') || null;
-}
-
-function setLastSyncDate(date) {
-    localStorage.setItem('adlil_last_sync', date);
-}
-
 async function syncPublications() {
     try {
-        let query = db.collection('publications').orderBy('date', 'asc');
-        const lastSync = getLastSyncDate();
-        if (lastSync) {
-            query = query.where('date', '>', new Date(lastSync));
-        }
-        const snapshot = await query.get();
-        if (snapshot.empty) return;
+        // Récupérer TOUTES les publications depuis Firestore
+        const snapshot = await db.collection('publications').orderBy('date', 'asc').get();
 
-        const tx = idb.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-        let lastDate = null;
-
-        snapshot.forEach(doc => {
-            const data = { id: doc.id, ...doc.data(), date: doc.data().date.toDate().toISOString() };
-            store.put(data);
-            lastDate = data.date;
+        // Vider complètement IndexedDB avant de réécrire
+        // Cela supprime les publications effacées du serveur
+        await new Promise((resolve, reject) => {
+            const tx = idb.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            const req = store.clear();
+            req.onsuccess = () => resolve();
+            req.onerror = () => reject(req.error);
         });
 
-        if (lastDate) setLastSyncDate(lastDate);
-        console.log(`✅ ${snapshot.size} publication(s) synced`);
+        if (snapshot.empty) {
+            console.log('ℹ️ Aucune publication sur le serveur');
+            return;
+        }
+
+        // Réécrire toutes les publications fraîches
+        await new Promise((resolve, reject) => {
+            const tx = idb.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            snapshot.forEach(doc => {
+                const data = { id: doc.id, ...doc.data(), date: doc.data().date.toDate().toISOString() };
+                store.put(data);
+            });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+
+        // Réinitialiser la date de sync et les IDs lus
+        localStorage.removeItem('adlil_last_sync');
+        localStorage.removeItem('adlil_read');
+
+        console.log(`✅ ${snapshot.size} publication(s) synchronisée(s) depuis le serveur`);
     } catch (err) {
-        console.warn('⚠️ Offline or sync error:', err);
+        console.warn('⚠️ Erreur de sync:', err);
+        throw err; // remonter l'erreur pour que refreshFeed puisse la catcher
     }
 }
 
