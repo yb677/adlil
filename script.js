@@ -154,16 +154,22 @@ function generateQR() {
         `NAISSANCE: ${datenais}`
     ].join('\n');
 
-    // Vider complètement le container
     container.innerHTML = '';
 
-    // Créer le div cible pour la lib QRCode
-    const qrTarget = document.createElement('div');
-    qrTarget.style.cssText = 'display:flex; justify-content:center;';
-    container.appendChild(qrTarget);
+    // Créer un canvas directement et le passer à la lib
+    const canvas = document.createElement('canvas');
+    canvas.width = 220;
+    canvas.height = 220;
+    canvas.style.cssText = 'display:block; margin:0 auto;';
+    container.appendChild(canvas);
 
-    // Générer le QR
-    new QRCode(qrTarget, {
+    // Générer le QR dans le canvas via QRCode en mode canvas uniquement
+    // On crée dans un div caché, puis on extrait le canvas généré
+    const hidden = document.createElement('div');
+    hidden.style.cssText = 'position:absolute; visibility:hidden; top:-9999px;';
+    document.body.appendChild(hidden);
+
+    new QRCode(hidden, {
         text: data,
         width: 220,
         height: 220,
@@ -172,11 +178,27 @@ function generateQR() {
         correctLevel: QRCode.CorrectLevel.H
     });
 
-    // La lib génère un <canvas> ET une <img> superposés — supprimer l'img en trop
+    // Attendre que la lib ait fini de dessiner
     setTimeout(() => {
-        const img = qrTarget.querySelector('img');
-        if (img) img.remove();
-    }, 100);
+        const generatedCanvas = hidden.querySelector('canvas');
+        if (generatedCanvas) {
+            // Copier le rendu dans notre canvas visible
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(generatedCanvas, 0, 0, 220, 220);
+        } else {
+            // Fallback : utiliser l'img générée par la lib si pas de canvas
+            const generatedImg = hidden.querySelector('img');
+            if (generatedImg && generatedImg.src) {
+                const img = document.createElement('img');
+                img.src = generatedImg.src;
+                img.width = 220;
+                img.height = 220;
+                img.style.display = 'block';
+                canvas.replaceWith(img);
+            }
+        }
+        document.body.removeChild(hidden);
+    }, 300);
 
     // Nom et téléphone sous le QR
     const info = document.createElement('p');
