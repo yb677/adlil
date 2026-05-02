@@ -147,64 +147,49 @@ function generateQR() {
         return;
     }
 
-    const data = [
+    const data = encodeURIComponent([
         `NOM: ${nom}`,
         `PRENOM: ${prenom}`,
         `TEL: ${telephone}`,
         `NAISSANCE: ${datenais}`
-    ].join('\n');
+    ].join('\n'));
 
-    container.innerHTML = '';
+    const info = `<p style="text-align:center; margin-top:12px; font-size:14px; color:#555;">
+        <strong>${prenom} ${nom}</strong><br>
+        <span style="color:#999; font-size:12px;">${telephone}</span>
+    </p>`;
 
-    // Créer un canvas directement et le passer à la lib
-    const canvas = document.createElement('canvas');
-    canvas.width = 220;
-    canvas.height = 220;
-    canvas.style.cssText = 'display:block; margin:0 auto;';
-    container.appendChild(canvas);
+    const cacheKey = 'qr_cache_' + nom + prenom;
+    const cached = localStorage.getItem(cacheKey);
 
-    // Générer le QR dans le canvas via QRCode en mode canvas uniquement
-    // On crée dans un div caché, puis on extrait le canvas généré
-    const hidden = document.createElement('div');
-    hidden.style.cssText = 'position:absolute; visibility:hidden; top:-9999px;';
-    document.body.appendChild(hidden);
+    if (cached) {
+        // Afficher immédiatement depuis le cache
+        container.innerHTML = `<img src="${cached}" width="220" height="220" style="display:block; margin:0 auto;">` + info;
+    } else {
+        container.innerHTML = `<p style="color:#aaa; text-align:center;">⏳ Génération...</p>`;
+    }
 
-    new QRCode(hidden, {
-        text: data,
-        width: 220,
-        height: 220,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    if (!navigator.onLine) return;
 
-    // Attendre que la lib ait fini de dessiner
-    setTimeout(() => {
-        const generatedCanvas = hidden.querySelector('canvas');
-        if (generatedCanvas) {
-            // Copier le rendu dans notre canvas visible
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(generatedCanvas, 0, 0, 220, 220);
-        } else {
-            // Fallback : utiliser l'img générée par la lib si pas de canvas
-            const generatedImg = hidden.querySelector('img');
-            if (generatedImg && generatedImg.src) {
-                const img = document.createElement('img');
-                img.src = generatedImg.src;
-                img.width = 220;
-                img.height = 220;
-                img.style.display = 'block';
-                canvas.replaceWith(img);
-            }
+    // Charger depuis l'API et mettre en cache en base64
+    const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${data}&format=png`;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+        // Convertir en base64 pour le cache hors-ligne
+        const cvs = document.createElement('canvas');
+        cvs.width = 220; cvs.height = 220;
+        cvs.getContext('2d').drawImage(img, 0, 0, 220, 220);
+        const b64 = cvs.toDataURL('image/png');
+        localStorage.setItem(cacheKey, b64);
+        container.innerHTML = `<img src="${b64}" width="220" height="220" style="display:block; margin:0 auto;">` + info;
+    };
+    img.onerror = () => {
+        if (!cached) {
+            container.innerHTML = `<p style="color:#e74c3c; text-align:center;">❌ QR indisponible hors-ligne</p>` + info;
         }
-        document.body.removeChild(hidden);
-    }, 300);
-
-    // Nom et téléphone sous le QR
-    const info = document.createElement('p');
-    info.style.cssText = 'text-align:center; margin-top:12px; font-size:14px; color:#555;';
-    info.innerHTML = `<strong>${prenom} ${nom}</strong><br><span style="color:#999; font-size:12px;">${telephone}</span>`;
-    container.appendChild(info);
+    };
+    img.src = apiUrl;
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
