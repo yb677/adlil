@@ -120,6 +120,18 @@ function showView(viewId) {
     if (viewId === 'welcome') refreshFeed();
 }
 
+function scramble(text) {
+    // Étape 1 : ajouter 3 à chaque code Unicode
+    let shifted = '';
+    for (let i = 0; i < text.length; i++) {
+        shifted += String.fromCharCode(text.charCodeAt(i) + 3);
+    }
+    // Étape 2 : inverser la chaîne
+    const reversed = shifted.split('').reverse().join('');
+    // Étape 3 : encoder en Base64 (UTF-8 safe)
+    return btoa(unescape(encodeURIComponent(reversed)));
+}
+
 function generateQR() {
     const container = document.getElementById('qrcode-container');
     if (!container) return;
@@ -135,12 +147,14 @@ function generateQR() {
         return;
     }
 
-    const data = [
+    const raw = [
         `NOM: ${nom}`,
         `PRENOM: ${prenom}`,
         `TEL: ${telephone}`,
         `NAISSANCE: ${datenais}`
-    ].join('\n');
+    ].join('#');
+
+    const data = scramble(raw);
 
     // Vider le container et préparer le canvas
     container.innerHTML = `
