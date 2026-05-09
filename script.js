@@ -116,7 +116,10 @@ function showView(viewId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + viewId).classList.add('active');
     document.getElementById('sideMenu').classList.remove('active');
-    if (viewId === 'qr') generateQR();
+    if (viewId === 'qr') {
+        generateQR();       // génère le canvas
+        renderFamilleQR();  // construit la liste (une seule fois, sans toucher le canvas)
+    }
     if (viewId === 'welcome') refreshFeed();
 }
 
@@ -129,7 +132,7 @@ function scramble(text) {
     return btoa(unescape(encodeURIComponent(reversed)));
 }
 
-// Construit et affiche le QR avec un suffixe optionnel (index des accompagnants)
+// Génère uniquement le canvas QR avec le suffixe donné
 function generateQR(suffix) {
     suffix = suffix || '';
     const container = document.getElementById('qrcode-container');
@@ -190,12 +193,9 @@ function generateQR(suffix) {
                 onerror="this.parentElement.innerHTML='<p style=color:red>QR Code indisponible</p>'">`;
         }
     }, 100);
-
-    // Afficher la liste des membres de la famille après le QR
-    renderFamilleQR();
 }
 
-// Construit la liste des membres de la famille avec cases à cocher
+// Construit la liste des membres une seule fois à l'ouverture de la vue QR
 function renderFamilleQR() {
     const list = document.getElementById('famille-qr-list');
     if (!list) return;
@@ -203,11 +203,9 @@ function renderFamilleQR() {
     const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
     const membres = [];
 
-    // Construire la liste à plat : conjoints + enfants
     (d.famille || []).forEach(conjoint => {
-        if (conjoint.prenom || conjoint.nom) {
+        if (conjoint.prenom || conjoint.nom)
             membres.push(`${conjoint.prenom} ${conjoint.nom}`.trim());
-        }
         (conjoint.enfants || []).forEach(enfant => {
             if (enfant.prenom) membres.push(enfant.prenom);
         });
@@ -229,14 +227,13 @@ function renderFamilleQR() {
     `).join('');
 }
 
-// Appelée à chaque coche — met à jour le compteur et régénère le QR
+// À chaque coche : met à jour le compteur et régénère UNIQUEMENT le canvas
 function onFamilleQRChange() {
     const checkboxes = document.querySelectorAll('#famille-qr-list input[type=checkbox]');
     const checked = [...checkboxes].filter(c => c.checked);
     const suffix = checked.map(c => c.dataset.index).join('');
-
     document.getElementById('qr-accomp-count').textContent = checked.length;
-    generateQR(suffix);
+    generateQR(suffix); // ne touche pas la liste
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
