@@ -406,6 +406,41 @@ function updateEnfant(conjointId, enfantId, field, val) {
 // ============================================================
 document.getElementById('userForm').onsubmit = (e) => {
     e.preventDefault();
+
+    // Validation manuelle en arabe
+    const required = [
+        { id: 'f_nom',       label: 'اللقب' },
+        { id: 'f_prenom',    label: 'الاسم' },
+        { id: 'f_telephone', label: 'رقم هاتف الواتساب' },
+        { id: 'f_mokataa',   label: 'المقاطعة' },
+    ];
+
+    for (const field of required) {
+        const el = document.getElementById(field.id);
+        if (!el.value.trim()) {
+            // Mettre en évidence le champ
+            el.style.borderColor = '#dc3545';
+            el.focus();
+            // Afficher bulle d'erreur
+            const errToast = document.createElement('div');
+            errToast.textContent = `⚠️ حقل "${field.label}" إلزامي`;
+            errToast.style.cssText = `
+                position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+                background:#dc3545; color:white; padding:12px 24px;
+                border-radius:25px; font-size:15px; font-weight:bold;
+                box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:9999;
+                opacity:1; transition:opacity 0.5s ease;
+            `;
+            document.body.appendChild(errToast);
+            setTimeout(() => { errToast.style.opacity = '0'; }, 2500);
+            setTimeout(() => { errToast.remove(); }, 3100);
+            // Remettre la bordure normale après correction
+            el.addEventListener('input', () => el.style.borderColor = '', { once: true });
+            el.addEventListener('change', () => el.style.borderColor = '', { once: true });
+            return;
+        }
+        el.style.borderColor = '';
+    }
     const data = {
         nom:               document.getElementById('f_nom').value,
         prenom:            document.getElementById('f_prenom').value,
