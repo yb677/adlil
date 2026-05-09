@@ -125,29 +125,39 @@
 
 <!-- Écran Installation (Dynamique selon l'OS) -->
 <div id="install-screen" class="system-screen">
-    <h1>Bienvenue</h1>
+    <h1>مرحبا بك في تطبيق أدليل</h1>
     
     <!-- Message pour Android -->
     <div id="msg-android" style="display:none;">
-        <p>Installez l'application pour un accès rapide et une utilisation hors-ligne.</p>
-        <button id="btnInstallLarge">Installer l'application</button>
+        <button id="btnInstallLarge" style="
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 18px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(40,167,69,0.4);
+            margin-top: 20px;
+        ">تثبيت التطبيق</button>
     </div>
 
     <!-- Message pour iOS (iPhone/iPad) -->
     <div id="msg-ios" style="display:none;">
-        <p>Installez l'application sur votre iPhone :</p>
-        <p style="font-size: 1.1rem; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #ddd;">
-            1. Cliquez sur le bouton <strong>Partager</strong> <img src="https://icons8.com" style="vertical-align:middle;"/> en bas de Safari.<br><br>
-            2. Choisissez <strong>"Sur l'écran d'accueil"</strong>.
+        <p style="font-size: 1.1rem; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #ddd; direction: rtl;">
+            1. اضغط على زر <strong>مشاركة</strong> في أسفل Safari.<br><br>
+            2. اختر <strong>"إضافة إلى الشاشة الرئيسية"</strong>.
         </p>
     </div>
 </div>
 
     <!-- Écran Succès -->
     <div id="success-screen" class="system-screen">
-        <h1 style="color: #28a745;">✓ Prêt !</h1>
-        <p>L'icône est sur votre écran d'accueil.</p>
-        <p>Fermez ce navigateur et lancez l'application.</p>
+        <h1 style="color: #28a745;">✓ تم !</h1>
+        <p style="direction: rtl; font-size: 1rem; line-height: 1.7;">
+            أغلق هذا المتصفح وانطلق من زر أدليل الجديد الذي سيظهر بعد لحظات بجانب أيقونات التطبيقات الأخرى.
+        </p>
     </div>
 
     <!-- Interface App -->
