@@ -269,24 +269,33 @@ let famille = []; // tableau de conjoints: { id, nom, prenom, dateNaissance, enf
 let conjointCounter = 0;
 let enfantCounter = 0;
 
+const conjointLabels = ['الزوجة الأولى','الزوجة الثانية','الزوجة الثالثة','الزوجة الرابعة'];
+
 function renderFamille() {
     const zone = document.getElementById('famille-zone');
     const btn = document.getElementById('btnAddConjoint');
     zone.innerHTML = '';
 
-    famille.forEach((conjoint) => {
+    famille.forEach((conjoint, index) => {
         const hasEnfants = conjoint.enfants.length > 0;
+        const label = conjointLabels[index] || `الزوجة ${index + 1}`;
 
         const cDiv = document.createElement('fieldset');
         cDiv.innerHTML = `
             <legend>
-                Conjoint
-                ${!hasEnfants ? `<button type="button" class="btn-trash" onclick="removeConjoint('${conjoint.id}')" title="Supprimer le conjoint">🗑</button>` : ''}
+                ${label}
+                ${!hasEnfants ? `<button type="button" class="btn-trash" onclick="removeConjoint('${conjoint.id}')" title="حذف">🗑</button>` : ''}
             </legend>
-            <input type="text" placeholder="Nom" value="${conjoint.nom}" oninput="updateConjoint('${conjoint.id}','nom',this.value)">
-            <input type="text" placeholder="Prénom" value="${conjoint.prenom}" oninput="updateConjoint('${conjoint.id}','prenom',this.value)">
-            <label>Date de naissance</label>
-            <input type="date" value="${conjoint.dateNaissance}" oninput="updateConjoint('${conjoint.id}','dateNaissance',this.value)">
+            <div class="field-row">
+                <div class="field-group">
+                    <label>إسم</label>
+                    <input type="text" placeholder="إسم" value="${conjoint.prenom}" oninput="updateConjoint('${conjoint.id}','prenom',this.value)">
+                </div>
+                <div class="field-group">
+                    <label>لقب</label>
+                    <input type="text" placeholder="لقب" value="${conjoint.nom}" oninput="updateConjoint('${conjoint.id}','nom',this.value)">
+                </div>
+            </div>
         `;
 
         // Enfants du conjoint
@@ -294,10 +303,16 @@ function renderFamille() {
             const eDiv = document.createElement('div');
             eDiv.className = 'enfant-row';
             eDiv.innerHTML = `
-                <button type="button" class="btn-trash" onclick="removeEnfant('${conjoint.id}','${enfant.id}')" title="Supprimer l'enfant">🗑</button>
-                <div class="enfant-fields">
-                    <input type="text" placeholder="Prénom de l'enfant" value="${enfant.prenom}" oninput="updateEnfant('${conjoint.id}','${enfant.id}','prenom',this.value)">
-                    <input type="date" value="${enfant.dateNaissance}" oninput="updateEnfant('${conjoint.id}','${enfant.id}','dateNaissance',this.value)">
+                <button type="button" class="btn-trash" onclick="removeEnfant('${conjoint.id}','${enfant.id}')" title="حذف الطفل">🗑</button>
+                <div class="field-row" style="flex:1; margin-bottom:0;">
+                    <div class="field-group">
+                        <label>إسم الطفل</label>
+                        <input type="text" placeholder="إسم الطفل" value="${enfant.prenom}" oninput="updateEnfant('${conjoint.id}','${enfant.id}','prenom',this.value)">
+                    </div>
+                    <div class="field-group">
+                        <label>تاريخ الميلاد</label>
+                        <input type="date" value="${enfant.dateNaissance}" oninput="updateEnfant('${conjoint.id}','${enfant.id}','dateNaissance',this.value)">
+                    </div>
                 </div>
             `;
             cDiv.appendChild(eDiv);
@@ -307,14 +322,13 @@ function renderFamille() {
         const btnEnfant = document.createElement('button');
         btnEnfant.type = 'button';
         btnEnfant.className = 'action-btn-sm';
-        btnEnfant.textContent = '+ Ajouter un enfant';
+        btnEnfant.textContent = '+ إضافة طفل';
         btnEnfant.onclick = () => addEnfant(conjoint.id);
         cDiv.appendChild(btnEnfant);
 
         zone.appendChild(cDiv);
     });
 
-    // Le bouton "Ajouter conjoint" reste TOUJOURS à la fin
     zone.parentElement.insertBefore(btn, zone.nextSibling);
 }
 
@@ -380,9 +394,21 @@ document.getElementById('userForm').onsubmit = (e) => {
         famille:           famille
     };
     localStorage.setItem('pwa_profile', JSON.stringify(data));
-    document.getElementById('welcomeUser').innerText = `Ravi de vous revoir, ${data.prenom} ${data.nom}`;
-    document.getElementById('statusMsg').innerText = "✓ Enregistré !";
-    setTimeout(() => document.getElementById('statusMsg').innerText = "", 3000);
+    document.getElementById('welcomeUser').innerText = `مرحباً بك، ${data.prenom} ${data.nom}`;
+
+    // Bulle "تم الحفظ !"
+    const toast = document.createElement('div');
+    toast.textContent = '✓ تم الحفظ !';
+    toast.style.cssText = `
+        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+        background: #28a745; color: white; padding: 12px 28px;
+        border-radius: 25px; font-size: 15px; font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 9999;
+        opacity: 1; transition: opacity 0.5s ease;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+    setTimeout(() => { toast.remove(); }, 2600);
 };
 
 window.onload = async () => {
