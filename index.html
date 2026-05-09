@@ -249,10 +249,10 @@
                 </div>
             </div>
 
-            <!-- رقم الهاتف -->
+            <!-- رقم هاتف الواتساب -->
             <div class="field-full">
-                <label for="f_telephone">رقم الهاتف</label>
-                <input type="tel" id="f_telephone" placeholder="رقم الهاتف" dir="ltr">
+                <label for="f_telephone">رقم هاتف الواتساب</label>
+                <input type="tel" id="f_telephone" placeholder="رقم هاتف الواتساب" dir="ltr">
             </div>
         </fieldset>
 
@@ -311,10 +311,11 @@
                 <label for="f_mokataa">المقاطعة</label>
                 <select id="f_mokataa">
                     <option value="">-- اختر --</option>
-                    <option>Alger Centre</option>
-                    <option>Belcourt</option>
-                    <option>El Harrach</option>
-                    <option>El Hamiz</option>
+                    <option>الجزائر وسط</option>
+                    <option>بلكور</option>
+                    <option>الحراش</option>
+                    <option>الحميز</option>
+                    <option>بن رضوان</option>
                 </select>
             </div>
 
@@ -345,12 +346,11 @@
 
         <!-- VUE QR CODE -->
         <div id="view-qr" class="view">
-            <h2>رمز QR</h2>
             <div id="qrcode-container"></div>
-            <button class="action-btn" onclick="generateQR()" style="margin-top:20px; background:#6c757d;">🔄 تحيين</button>
+            <button class="action-btn" onclick="generateQR()" style="margin-top:8px; margin-bottom:16px; background:#6c757d; padding:8px;">🔄 تحيين</button>
 
             <!-- قائمة المرافقين -->
-            <div id="famille-qr-zone" style="direction:rtl; text-align:right; margin-top:24px;">
+            <div id="famille-qr-zone" style="direction:rtl; text-align:right;">
                 <p style="font-weight:bold; font-size:1rem; color:#333; margin-bottom:10px;">
                     المرافقون من أفراد العائلة :
                     <span id="qr-accomp-count" style="color:#007bff;">0</span>
