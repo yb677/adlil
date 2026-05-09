@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Mon App PWA</title>
+    <title>ADLIL</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -125,6 +125,10 @@
 
 <!-- Écran Installation (Dynamique selon l'OS) -->
 <div id="install-screen" class="system-screen">
+    <img src="icon-192.png" alt="ADLIL"
+         style="width:100px; height:100px; border-radius:22px;
+                box-shadow:0 4px 15px rgba(0,0,0,0.15); margin-bottom:16px;"
+         onerror="this.style.display='none'">
     <h1 style="direction:rtl; font-size:1.4rem; margin-bottom: 30px;">مرحبا بك في تطبيق أدليل</h1>
     
     <!-- Message pour Android -->
@@ -154,6 +158,10 @@
 
     <!-- Écran Succès -->
     <div id="success-screen" class="system-screen">
+        <img src="icon-192.png" alt="ADLIL"
+             style="width:100px; height:100px; border-radius:22px;
+                    box-shadow:0 4px 15px rgba(0,0,0,0.15); margin-bottom:16px;"
+             onerror="this.style.display='none'">
         <h1 style="direction:rtl; font-size:1.4rem; margin-bottom: 30px;">مرحبا بك في تطبيق أدليل</h1>
         <h2 style="color: #28a745; font-size: 1.3rem;">✓ تم التثبيت بنجاح</h2>
         <p style="direction: rtl; font-size: 1.15rem; line-height: 2; padding: 0 10px;">
@@ -164,9 +172,9 @@
     <!-- Interface App -->
     <div class="burger-btn" id="burgerBtn">☰</div>
     <nav class="nav-menu" id="sideMenu">
-        <div class="nav-item" onclick="showView('welcome')">🏠 Accueil</div>
-        <div class="nav-item" onclick="showView('app')">📝 Mes Infos</div>
-        <div class="nav-item" onclick="showView('qr')">🖼️ Mon QR Code</div>
+        <div class="nav-item" onclick="showView('welcome')">🏠 الرئيسية</div>
+        <div class="nav-item" onclick="showView('app')">📝 معلوماتي</div>
+        <div class="nav-item" onclick="showView('qr')">🖼️ رمز QR</div>
     </nav>
 
     <div class="app-container" id="mainApp">
@@ -302,11 +310,6 @@
             </div>
 
             <div class="field-full">
-                <label for="f_adresseActivite">عنوان العمل</label>
-                <input type="text" id="f_adresseActivite" placeholder="عنوان العمل">
-            </div>
-
-            <div class="field-full">
                 <label for="f_mokataa">المقاطعة</label>
                 <select id="f_mokataa">
                     <option value="">-- اختر --</option>
@@ -316,6 +319,11 @@
                     <option>الحميز</option>
                     <option>بن رضوان</option>
                 </select>
+            </div>
+
+            <div class="field-full">
+                <label for="f_adresseActivite">عنوان العمل</label>
+                <input type="text" id="f_adresseActivite" placeholder="عنوان العمل">
             </div>
 
             <div class="field-full">
