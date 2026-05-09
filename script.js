@@ -121,26 +121,25 @@ function showView(viewId) {
 }
 
 function scramble(text) {
-    // Étape 1 : ajouter 3 à chaque code Unicode
     let shifted = '';
     for (let i = 0; i < text.length; i++) {
         shifted += String.fromCharCode(text.charCodeAt(i) + 3);
     }
-    // Étape 2 : inverser la chaîne
     const reversed = shifted.split('').reverse().join('');
-    // Étape 3 : encoder en Base64 (UTF-8 safe)
     return btoa(unescape(encodeURIComponent(reversed)));
 }
 
-function generateQR() {
+// Construit et affiche le QR avec un suffixe optionnel (index des accompagnants)
+function generateQR(suffix) {
+    suffix = suffix || '';
     const container = document.getElementById('qrcode-container');
     if (!container) return;
 
     const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
-    const nom       = d.nom        || '';
-    const prenom    = d.prenom     || '';
-    const telephone = d.telephone  || '';
-    const datenais  = d.datenaissance || '';
+    const nom      = d.nom        || '';
+    const prenom   = d.prenom     || '';
+    const telephone= d.telephone  || '';
+    const datenais = d.datenaissance || '';
 
     if (!nom && !prenom) {
         container.innerHTML = `<p style="color:#999; text-align:center;">لا توجد بيانات. يرجى ملء معلوماتك أولاً.</p>`;
@@ -152,11 +151,10 @@ function generateQR() {
         `PRENOM: ${prenom}`,
         `TEL: ${telephone}`,
         `NAISSANCE: ${datenais}`
-    ].join('#');
+    ].join('#') + (suffix ? '#' + suffix : '');
 
     const data = scramble(raw);
 
-    // Vider le container et préparer le canvas
     container.innerHTML = `
         <div id="qr-canvas"></div>
         <p style="text-align:center; margin-top:12px; font-size:14px; color:#555;">
@@ -164,14 +162,11 @@ function generateQR() {
             <span style="color:#999; font-size:12px;">${telephone}</span>
         </p>`;
 
-    // Délai : laisse le DOM s'afficher avant de dessiner le canvas
-    // Certains navigateurs mobiles échouent si le conteneur n'est pas encore visible
     setTimeout(() => {
         const canvas = document.getElementById('qr-canvas');
         if (!canvas) return;
-
         try {
-            const qr = new QRCode(canvas, {
+            new QRCode(canvas, {
                 text: data,
                 width: 220,
                 height: 220,
@@ -179,28 +174,69 @@ function generateQR() {
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.H
             });
-
-            // Vérification après rendu : si canvas vide (bug sur certains Android),
-            // forcer un re-rendu via image base64
             setTimeout(() => {
                 const cvs = canvas.querySelector('canvas');
                 if (cvs) {
-                    // Remplacer le canvas par une img statique pour éviter les bugs d'affichage
                     const dataUrl = cvs.toDataURL('image/png');
                     if (dataUrl && dataUrl.length > 100) {
                         canvas.innerHTML = `<img src="${dataUrl}" width="220" height="220" style="display:block;" alt="QR Code">`;
                     }
                 }
             }, 200);
-
         } catch(err) {
-            // Fallback : image via API externe si la lib locale échoue
             console.warn('QRCode lib error:', err);
             canvas.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data)}"
                 width="220" height="220" alt="QR Code"
                 onerror="this.parentElement.innerHTML='<p style=color:red>QR Code indisponible</p>'">`;
         }
     }, 100);
+
+    // Afficher la liste des membres de la famille après le QR
+    renderFamilleQR();
+}
+
+// Construit la liste des membres de la famille avec cases à cocher
+function renderFamilleQR() {
+    const list = document.getElementById('famille-qr-list');
+    if (!list) return;
+
+    const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
+    const membres = [];
+
+    // Construire la liste à plat : conjoints + enfants
+    (d.famille || []).forEach(conjoint => {
+        if (conjoint.prenom || conjoint.nom) {
+            membres.push(`${conjoint.prenom} ${conjoint.nom}`.trim());
+        }
+        (conjoint.enfants || []).forEach(enfant => {
+            if (enfant.prenom) membres.push(enfant.prenom);
+        });
+    });
+
+    if (membres.length === 0) {
+        list.innerHTML = `<p style="color:#999; font-size:0.9rem;">لا يوجد أفراد عائلة مسجلون.</p>`;
+        return;
+    }
+
+    list.innerHTML = membres.map((nom, i) => `
+        <label style="display:flex; align-items:center; gap:10px; padding:8px 4px;
+                       border-bottom:1px solid #eee; cursor:pointer; font-size:0.97rem;">
+            <input type="checkbox" data-index="${String(i+1).padStart(2,'0')}"
+                onchange="onFamilleQRChange()"
+                style="width:18px; height:18px; accent-color:#007bff; flex-shrink:0;">
+            <span>${nom}</span>
+        </label>
+    `).join('');
+}
+
+// Appelée à chaque coche — met à jour le compteur et régénère le QR
+function onFamilleQRChange() {
+    const checkboxes = document.querySelectorAll('#famille-qr-list input[type=checkbox]');
+    const checked = [...checkboxes].filter(c => c.checked);
+    const suffix = checked.map(c => c.dataset.index).join('');
+
+    document.getElementById('qr-accomp-count').textContent = checked.length;
+    generateQR(suffix);
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
