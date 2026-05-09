@@ -157,7 +157,7 @@
         <h1 style="direction:rtl; font-size:1.4rem; margin-bottom: 30px;">مرحبا بك في تطبيق أدليل</h1>
         <h2 style="color: #28a745; font-size: 1.3rem;">✓ تم التثبيت بنجاح</h2>
         <p style="direction: rtl; font-size: 1.15rem; line-height: 2; padding: 0 10px;">
-            أغلق هذا المتصفح وافتح التطبيق عبر أيقونة أدليل الجديدة التي ستظهر بعد لحظات بجانب أيقونات التطبيقات الأخرى.
+            أغلق هذا المتصفح وافتح التطبيق عبر أيقونة أدليل الجديدة التي ستظهر بعد لحظات بجانب أيقونات التطبيقات الأخرى
         </p>
     </div>
 
@@ -183,7 +183,7 @@
                 font-size: 13px;
                 cursor: pointer;
                 margin-bottom: 10px;
-            ">🔄 Actualiser</button>
+            ">🔄 تحيين</button>
             <div id="feed-container"></div>
         </div>
 
@@ -321,7 +321,16 @@
             </div>
         </fieldset>
 
-        <button type="submit" class="action-btn">حفظ</button>
+        <!-- موافقة RGPD -->
+        <div style="direction:rtl; text-align:right; background:#f8f9fa; border:1px solid #dee2e6; border-radius:10px; padding:14px; margin-bottom:14px;">
+            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:0.92rem; line-height:1.7; color:#333;">
+                <input type="checkbox" id="consentCheck" onchange="const btn=document.getElementById('btnSave'); btn.disabled=!this.checked; btn.style.opacity=this.checked?'1':'0.5';"
+                    style="margin-top:4px; width:18px; height:18px; flex-shrink:0; cursor:pointer; accent-color:#007bff;">
+                <span>أوافق على استعمال معلوماتي من طرف التنسيقية حصريا ووفقا للقواعد المتعلقة بـ القانون 18-07 الخاص بحماية البيانات ذات الطابع الشخصي.</span>
+            </label>
+        </div>
+
+        <button type="submit" id="btnSave" class="action-btn" disabled style="opacity:0.5; transition: opacity 0.3s;">حفظ البيانات</button>
     </form>
     <p id="statusMsg" class="status"></p>
 </div>
