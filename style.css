@@ -11,6 +11,7 @@ body { display: flex; justify-content: center; align-items: center; }
 
 .view { display: none; text-align: center; }
 .view.active { display: block; }
+#view-qr { overflow-y: auto; padding-bottom: 40px; }
 
 input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
 .action-btn { width: 100%; padding: 14px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }

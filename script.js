@@ -162,7 +162,12 @@ function buildQRData(accompList) {
         familleStr += '#*';
         familleStr += '#' + (conjoint.nom    || '');
         familleStr += '#' + (conjoint.prenom || '');
-        (conjoint.enfants || []).forEach(enfant => {
+        const enfantsTries = [...(conjoint.enfants || [])].sort((a, b) => {
+            if (!a.dateNaissance) return 1;
+            if (!b.dateNaissance) return -1;
+            return new Date(a.dateNaissance) - new Date(b.dateNaissance);
+        });
+        enfantsTries.forEach(enfant => {
             familleStr += '#' + (enfant.prenom || '');
             familleStr += '#' + toDisplayDate(enfant.dateNaissance || '');
         });
@@ -259,7 +264,12 @@ function renderFamilleQR() {
     (d.famille || []).forEach(conjoint => {
         if (conjoint.prenom || conjoint.nom)
             membres.push(`${conjoint.prenom} ${conjoint.nom}`.trim());
-        (conjoint.enfants || []).forEach(enfant => {
+        const enfantsTries = [...(conjoint.enfants || [])].sort((a, b) => {
+            if (!a.dateNaissance) return 1;
+            if (!b.dateNaissance) return -1;
+            return new Date(a.dateNaissance) - new Date(b.dateNaissance);
+        });
+        enfantsTries.forEach(enfant => {
             if (enfant.prenom) membres.push(enfant.prenom);
         });
     });
@@ -363,6 +373,13 @@ function renderFamille() {
     zone.innerHTML = '';
 
     famille.forEach((conjoint, index) => {
+        // Trier les enfants par date de naissance (plus âgé en premier)
+        const enfantsTries = [...conjoint.enfants].sort((a, b) => {
+            if (!a.dateNaissance) return 1;
+            if (!b.dateNaissance) return -1;
+            return new Date(a.dateNaissance) - new Date(b.dateNaissance);
+        });
+
         const hasEnfants = conjoint.enfants.length > 0;
         const label = conjointLabels[index] || `الزوجة ${index + 1}`;
 
@@ -384,16 +401,16 @@ function renderFamille() {
             </div>
         `;
 
-        // Enfants du conjoint
-        conjoint.enfants.forEach((enfant) => {
+        // Enfants triés par âge
+        enfantsTries.forEach((enfant) => {
             const eDiv = document.createElement('div');
             eDiv.className = 'enfant-row';
             eDiv.innerHTML = `
-                <button type="button" class="btn-trash" onclick="removeEnfant('${conjoint.id}','${enfant.id}')" title="حذف الطفل">🗑</button>
+                <button type="button" class="btn-trash" onclick="removeEnfant('${conjoint.id}','${enfant.id}')" title="حذف الولد">🗑</button>
                 <div class="field-row" style="flex:1; margin-bottom:0;">
                     <div class="field-group">
-                        <label>إسم الطفل</label>
-                        <input type="text" placeholder="إسم الطفل" value="${enfant.prenom}" oninput="updateEnfant('${conjoint.id}','${enfant.id}','prenom',this.value)">
+                        <label>إسم الولد</label>
+                        <input type="text" placeholder="إسم الولد" value="${enfant.prenom}" oninput="updateEnfant('${conjoint.id}','${enfant.id}','prenom',this.value)">
                     </div>
                     <div class="field-group">
                         <label>تاريخ الميلاد</label>
@@ -408,7 +425,7 @@ function renderFamille() {
         const btnEnfant = document.createElement('button');
         btnEnfant.type = 'button';
         btnEnfant.className = 'action-btn-sm';
-        btnEnfant.textContent = '+ إضافة طفل';
+        btnEnfant.textContent = '+ إضافة ولد';
         btnEnfant.onclick = () => addEnfant(conjoint.id);
         cDiv.appendChild(btnEnfant);
 
