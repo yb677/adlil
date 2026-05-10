@@ -502,6 +502,7 @@ document.getElementById('userForm').onsubmit = (e) => {
         famille:           famille
     };
     localStorage.setItem('pwa_profile', JSON.stringify(data));
+    console.log('💾 famille sauvegardée:', JSON.stringify(data.famille, null, 2));
     document.getElementById('welcomeUser').innerText = `مرحباً بك، ${data.prenom} ${data.nom}`;
 
     // Bulle "تم الحفظ !"
@@ -540,6 +541,7 @@ window.onload = async () => {
     if (d.nom) document.getElementById('welcomeUser').innerText = `مرحباً بك، ${d.prenom} ${d.nom}`;
     if (d.famille) {
         famille = d.famille;
+        console.log('📂 famille chargée:', JSON.stringify(famille, null, 2));
         // Réinitialiser les compteurs à partir des IDs existants pour éviter les collisions
         famille.forEach(c => {
             const cNum = parseInt(c.id.replace('c', '')) || 0;
