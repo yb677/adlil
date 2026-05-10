@@ -162,6 +162,7 @@ function buildQRData(accompList) {
         familleStr += '#*';
         familleStr += '#' + (conjoint.nom    || '');
         familleStr += '#' + (conjoint.prenom || '');
+        familleStr += '#' + toDisplayDate(conjoint.dateNaissance || '');
         const enfantsTries = [...(conjoint.enfants || [])].sort((a, b) => {
             if (!a.dateNaissance) return 1;
             if (!b.dateNaissance) return -1;
@@ -391,13 +392,17 @@ function renderFamille() {
             </legend>
             <div class="field-row">
                 <div class="field-group">
-                    <label>إسم</label>
-                    <input type="text" placeholder="إسم" value="${conjoint.prenom}" oninput="updateConjoint('${conjoint.id}','prenom',this.value)">
-                </div>
-                <div class="field-group">
                     <label>لقب</label>
                     <input type="text" placeholder="لقب" value="${conjoint.nom}" oninput="updateConjoint('${conjoint.id}','nom',this.value)">
                 </div>
+                <div class="field-group">
+                    <label>إسم</label>
+                    <input type="text" placeholder="إسم" value="${conjoint.prenom}" oninput="updateConjoint('${conjoint.id}','prenom',this.value)">
+                </div>
+            </div>
+            <div class="field-full">
+                <label>تاريخ الميلاد</label>
+                <input type="date" value="${conjoint.dateNaissance || ''}" oninput="updateConjoint('${conjoint.id}','dateNaissance',this.value)">
             </div>
         `;
 
@@ -533,7 +538,19 @@ window.onload = async () => {
         if (el && d[f]) el.value = d[f];
     });
     if (d.nom) document.getElementById('welcomeUser').innerText = `مرحباً بك، ${d.prenom} ${d.nom}`;
-    if (d.famille) { famille = d.famille; renderFamille(); }
+    if (d.famille) {
+        famille = d.famille;
+        // Réinitialiser les compteurs à partir des IDs existants pour éviter les collisions
+        famille.forEach(c => {
+            const cNum = parseInt(c.id.replace('c', '')) || 0;
+            if (cNum > conjointCounter) conjointCounter = cNum;
+            (c.enfants || []).forEach(e => {
+                const eNum = parseInt(e.id.replace('e', '')) || 0;
+                if (eNum > enfantCounter) enfantCounter = eNum;
+            });
+        });
+        renderFamille();
+    }
 };
 
 // ============================================================
