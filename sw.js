@@ -1,7 +1,7 @@
 // ─── VERSION ────────────────────────────────────────────────────────────────
 // Changez uniquement ce numéro à chaque déploiement.
 // Le navigateur détectera la différence et déclenchera la mise à jour.
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 const CACHE_NAME = `mon-app-v${CACHE_VERSION}`;
 
 // ─── FICHIERS À METTRE EN CACHE ─────────────────────────────────────────────
