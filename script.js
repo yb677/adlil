@@ -132,31 +132,72 @@ function scramble(text) {
     return btoa(unescape(encodeURIComponent(reversed)));
 }
 
-// Génère uniquement le canvas QR avec le suffixe donné
-function generateQR(suffix) {
-    suffix = suffix || '';
+// Construit la chaîne complète du QR
+function buildQRData(accompSuffix) {
+    const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
+
+    // ── Partie claire ──────────────────────────────────────
+    const telephone = d.telephone  || '';
+    const nom       = d.nom        || '';
+    const prenom    = d.prenom     || '';
+    const partieClaire = [telephone, nom, prenom].join('#');
+
+    // ── Partie scrambled ───────────────────────────────────
+    const famille = d.famille || [];
+
+    // Construire la section conjoints + enfants
+    // Format : #*#nomConjoint#prenomConjoint#prenomEnfant#dateEnfant#...
+    let familleStr = '';
+    famille.forEach(conjoint => {
+        familleStr += '#*';
+        familleStr += '#' + (conjoint.nom    || '');
+        familleStr += '#' + (conjoint.prenom || '');
+        (conjoint.enfants || []).forEach(enfant => {
+            familleStr += '#' + (enfant.prenom       || '');
+            familleStr += '#' + (enfant.dateNaissance || '');
+        });
+    });
+
+    const partieScrambledRaw = [
+        'PWA',
+        d.pere              || '',
+        d.grandpere         || '',
+        d.mereNom           || '',
+        d.merePrenom        || '',
+        d.datenaissance     || '',
+        d.groupesanguin     || '',
+        d.niveauInstruction || '',
+        d.profession        || '',
+        d.adresseResidence  || '',
+        d.adresseActivite   || '',
+        d.maitrise          || '',
+        d.offres            || '',
+        '-',
+        '/'
+    ].join('#') + familleStr + (accompSuffix ? '#' + accompSuffix : '');
+
+    const partieScrambled = scramble(partieScrambledRaw);
+
+    return partieClaire + '#' + partieScrambled;
+}
+
+// Génère uniquement le canvas QR avec le suffixe accompagnants optionnel
+function generateQR(accompSuffix) {
+    accompSuffix = accompSuffix || '';
     const container = document.getElementById('qrcode-container');
     if (!container) return;
 
     const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
-    const nom      = d.nom        || '';
-    const prenom   = d.prenom     || '';
-    const telephone= d.telephone  || '';
-    const datenais = d.datenaissance || '';
+    const nom      = d.nom      || '';
+    const prenom   = d.prenom   || '';
+    const telephone= d.telephone|| '';
 
     if (!nom && !prenom) {
         container.innerHTML = `<p style="color:#999; text-align:center;">لا توجد بيانات. يرجى ملء معلوماتك أولاً.</p>`;
         return;
     }
 
-    const raw = [
-        `NOM: ${nom}`,
-        `PRENOM: ${prenom}`,
-        `TEL: ${telephone}`,
-        `NAISSANCE: ${datenais}`
-    ].join('#') + (suffix ? '#' + suffix : '');
-
-    const data = scramble(raw);
+    const data = buildQRData(accompSuffix);
 
     container.innerHTML = `
         <div id="qr-canvas"></div>
@@ -231,9 +272,9 @@ function renderFamilleQR() {
 function onFamilleQRChange() {
     const checkboxes = document.querySelectorAll('#famille-qr-list input[type=checkbox]');
     const checked = [...checkboxes].filter(c => c.checked);
-    const suffix = checked.map(c => c.dataset.index).join('');
+    const accompSuffix = checked.map(c => c.dataset.index).join('');
     document.getElementById('qr-accomp-count').textContent = checked.length;
-    generateQR(suffix); // ne touche pas la liste
+    generateQR(accompSuffix);
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
