@@ -123,6 +123,14 @@ function showView(viewId) {
     if (viewId === 'welcome') refreshFeed();
 }
 
+// Convertit YYYY-MM-DD → JJ/MM/AA
+function toDisplayDate(iso) {
+    if (!iso) return '';
+    const parts = iso.split('-');
+    if (parts.length !== 3) return iso;
+    return `${parts[2]}/${parts[1]}/${parts[0].slice(2)}`;
+}
+
 function scramble(text) {
     let shifted = '';
     for (let i = 0; i < text.length; i++) {
@@ -133,38 +141,42 @@ function scramble(text) {
 }
 
 // Construit la chaîne complète du QR
-function buildQRData(accompSuffix) {
+function buildQRData(accompList) {
     const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
 
     // ── Partie claire ──────────────────────────────────────
-    const telephone = d.telephone  || '';
-    const nom       = d.nom        || '';
-    const prenom    = d.prenom     || '';
+    const telephone = d.telephone || '';
+    const nom       = d.nom       || '';
+    const prenom    = d.prenom    || '';
     const partieClaire = [telephone, nom, prenom].join('#');
 
-    // ── Partie scrambled ───────────────────────────────────
-    const famille = d.famille || [];
+    // ── Accompagnants : index séparés par virgule (remplace '/') ──
+    const accompStr = accompList && accompList.length > 0
+        ? accompList.join(',')
+        : '';
 
-    // Construire la section conjoints + enfants
-    // Format : #*#nomConjoint#prenomConjoint#prenomEnfant#dateEnfant#...
+    // ── Famille : conjoints + enfants ─────────────────────
+    const famille = d.famille || [];
     let familleStr = '';
     famille.forEach(conjoint => {
         familleStr += '#*';
         familleStr += '#' + (conjoint.nom    || '');
         familleStr += '#' + (conjoint.prenom || '');
         (conjoint.enfants || []).forEach(enfant => {
-            familleStr += '#' + (enfant.prenom       || '');
-            familleStr += '#' + (enfant.dateNaissance || '');
+            familleStr += '#' + (enfant.prenom || '');
+            familleStr += '#' + toDisplayDate(enfant.dateNaissance || '');
         });
     });
 
+    // ── Partie scrambled ───────────────────────────────────
+    // '/' remplacé par les index des accompagnants cochés
     const partieScrambledRaw = [
         'PWA',
         d.pere              || '',
         d.grandpere         || '',
         d.mereNom           || '',
         d.merePrenom        || '',
-        d.datenaissance     || '',
+        toDisplayDate(d.datenaissance) || '',
         d.groupesanguin     || '',
         d.niveauInstruction || '',
         d.profession        || '',
@@ -173,31 +185,31 @@ function buildQRData(accompSuffix) {
         d.maitrise          || '',
         d.offres            || '',
         '-',
-        '/'
-    ].join('#') + familleStr + (accompSuffix ? '#' + accompSuffix : '');
+        accompStr           // ← à la place de '/'
+    ].join('#') + familleStr;
 
     const partieScrambled = scramble(partieScrambledRaw);
 
     return partieClaire + '#' + partieScrambled;
 }
 
-// Génère uniquement le canvas QR avec le suffixe accompagnants optionnel
-function generateQR(accompSuffix) {
-    accompSuffix = accompSuffix || '';
+// Génère uniquement le canvas QR
+function generateQR(accompList) {
+    accompList = accompList || [];
     const container = document.getElementById('qrcode-container');
     if (!container) return;
 
     const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
-    const nom      = d.nom      || '';
-    const prenom   = d.prenom   || '';
-    const telephone= d.telephone|| '';
+    const nom       = d.nom       || '';
+    const prenom    = d.prenom    || '';
+    const telephone = d.telephone || '';
 
     if (!nom && !prenom) {
         container.innerHTML = `<p style="color:#999; text-align:center;">لا توجد بيانات. يرجى ملء معلوماتك أولاً.</p>`;
         return;
     }
 
-    const data = buildQRData(accompSuffix);
+    const data = buildQRData(accompList);
 
     container.innerHTML = `
         <div id="qr-canvas"></div>
@@ -272,9 +284,9 @@ function renderFamilleQR() {
 function onFamilleQRChange() {
     const checkboxes = document.querySelectorAll('#famille-qr-list input[type=checkbox]');
     const checked = [...checkboxes].filter(c => c.checked);
-    const accompSuffix = checked.map(c => c.dataset.index).join('');
+    const accompList = checked.map(c => c.dataset.index); // ex: ['1','4','5']
     document.getElementById('qr-accomp-count').textContent = checked.length;
-    generateQR(accompSuffix);
+    generateQR(accompList);
 }
 
 // Fonction de secours qui dessine un QR stylisé si le réseau est bloqué
