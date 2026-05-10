@@ -272,7 +272,7 @@ function renderFamilleQR() {
     list.innerHTML = membres.map((nom, i) => `
         <label style="display:flex; align-items:center; gap:10px; padding:8px 4px;
                        border-bottom:1px solid #eee; cursor:pointer; font-size:0.97rem;">
-            <input type="checkbox" data-index="${String(i+1).padStart(2,'0')}"
+            <input type="checkbox" data-index="${i+1}"
                 onchange="onFamilleQRChange()"
                 style="width:18px; height:18px; accent-color:#007bff; flex-shrink:0;">
             <span>${nom}</span>
