@@ -155,10 +155,10 @@ function buildQRData(accompList) {
         ? accompList.join(',')
         : '';
 
-    // ── Famille : conjoints + enfants ─────────────────────
-    const famille = d.famille || [];
+    // ── Famille : conjoints + enfants depuis la mémoire ───
+    const famData = famille.length > 0 ? famille : (d.famille || []);
     let familleStr = '';
-    famille.forEach(conjoint => {
+    famData.forEach(conjoint => {
         familleStr += '#*';
         familleStr += '#' + (conjoint.nom    || '');
         familleStr += '#' + (conjoint.prenom || '');
@@ -254,15 +254,14 @@ function generateQR(accompList) {
     }, 100);
 }
 
-// Construit la liste des membres une seule fois à l'ouverture de la vue QR
+// Construit la liste des membres depuis la variable famille en mémoire
 function renderFamilleQR() {
     const list = document.getElementById('famille-qr-list');
     if (!list) return;
 
-    const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
     const membres = [];
 
-    (d.famille || []).forEach(conjoint => {
+    famille.forEach(conjoint => {
         if (conjoint.prenom || conjoint.nom)
             membres.push(`${conjoint.prenom} ${conjoint.nom}`.trim());
         const enfantsTries = [...(conjoint.enfants || [])].sort((a, b) => {
