@@ -497,8 +497,9 @@ document.getElementById('userForm').onsubmit = (e) => {
         offres:            document.getElementById('f_offres').value,
         famille:           famille
     };
-    // Trier les enfants par âge au moment de la sauvegarde
-    famille.forEach(conjoint => {
+    // Copie profonde de famille pour le tri — ne pas muter le tableau en mémoire
+    const familleSauvegarde = JSON.parse(JSON.stringify(famille));
+    familleSauvegarde.forEach(conjoint => {
         conjoint.enfants.sort((a, b) => {
             if (!a.dateNaissance) return 1;
             if (!b.dateNaissance) return -1;
@@ -506,8 +507,8 @@ document.getElementById('userForm').onsubmit = (e) => {
         });
     });
 
+    data.famille = familleSauvegarde;
     localStorage.setItem('pwa_profile', JSON.stringify(data));
-    console.log('💾 famille sauvegardée:', JSON.stringify(data.famille, null, 2));
     document.getElementById('welcomeUser').innerText = `مرحباً بك، ${data.prenom} ${data.nom}`;
 
     // Bulle "تم الحفظ !"
@@ -546,7 +547,6 @@ window.onload = async () => {
     if (d.nom) document.getElementById('welcomeUser').innerText = `مرحباً بك، ${d.prenom} ${d.nom}`;
     if (d.famille) {
         famille = d.famille;
-        console.log('📂 famille chargée:', JSON.stringify(famille, null, 2));
         // Réinitialiser les compteurs à partir des IDs existants pour éviter les collisions
         famille.forEach(c => {
             const cNum = parseInt(c.id.replace('c', '')) || 0;
