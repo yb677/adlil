@@ -373,12 +373,9 @@ function renderFamille() {
     zone.innerHTML = '';
 
     famille.forEach((conjoint, index) => {
-        // Trier les enfants par date de naissance (plus âgé en premier)
-        const enfantsTries = [...conjoint.enfants].sort((a, b) => {
-            if (!a.dateNaissance) return 1;
-            if (!b.dateNaissance) return -1;
-            return new Date(a.dateNaissance) - new Date(b.dateNaissance);
-        });
+        // Afficher les enfants dans l'ordre d'insertion (pas de tri ici)
+        // Le tri par âge est appliqué uniquement dans le QR
+        const enfantsAffiches = conjoint.enfants;
 
         const hasEnfants = conjoint.enfants.length > 0;
         const label = conjointLabels[index] || `الزوجة ${index + 1}`;
@@ -405,8 +402,8 @@ function renderFamille() {
             </div>
         `;
 
-        // Enfants triés par âge
-        enfantsTries.forEach((enfant) => {
+        // Enfants dans l'ordre d'insertion
+        enfantsAffiches.forEach((enfant) => {
             const eDiv = document.createElement('div');
             eDiv.className = 'enfant-row';
             eDiv.innerHTML = `
@@ -500,6 +497,15 @@ document.getElementById('userForm').onsubmit = (e) => {
         offres:            document.getElementById('f_offres').value,
         famille:           famille
     };
+    // Trier les enfants par âge au moment de la sauvegarde
+    famille.forEach(conjoint => {
+        conjoint.enfants.sort((a, b) => {
+            if (!a.dateNaissance) return 1;
+            if (!b.dateNaissance) return -1;
+            return new Date(a.dateNaissance) - new Date(b.dateNaissance);
+        });
+    });
+
     localStorage.setItem('pwa_profile', JSON.stringify(data));
     console.log('💾 famille sauvegardée:', JSON.stringify(data.famille, null, 2));
     document.getElementById('welcomeUser').innerText = `مرحباً بك، ${data.prenom} ${data.nom}`;
