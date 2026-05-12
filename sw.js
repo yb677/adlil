@@ -1,7 +1,7 @@
 // ─── VERSION ────────────────────────────────────────────────────────────────
 // Changez uniquement ce numéro à chaque déploiement.
 // Le navigateur détectera la différence et déclenchera la mise à jour.
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 12;
 const CACHE_NAME = `mon-app-v${CACHE_VERSION}`;
 
 // ─── FICHIERS À METTRE EN CACHE ─────────────────────────────────────────────
@@ -45,7 +45,12 @@ self.addEventListener('activate', (e) => {
     );
 });
 
-// ─── FETCH : stratégie hybride ───────────────────────────────────────────────
+// ─── MESSAGE : retourner la version au client ────────────────────────────────
+self.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'GET_VERSION') {
+        e.ports[0].postMessage({ version: CACHE_VERSION });
+    }
+});
 self.addEventListener('fetch', (e) => {
     const url = new URL(e.request.url);
 

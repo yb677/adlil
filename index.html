@@ -154,6 +154,24 @@
             2. اختر <strong>"إضافة إلى الشاشة الرئيسية"</strong>.
         </p>
     </div>
+
+    <!-- QR Code du lien avec icône ADLIL superposée -->
+    <div style="margin-top:28px; text-align:center;">
+        <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">أو شارك الرابط عبر رمز QR</p>
+        <div style="position:relative; display:inline-block;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://yb677.github.io/mon-app/&margin=10"
+                 width="180" height="180"
+                 style="display:block; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.15);"
+                 alt="QR ADLIL">
+            <!-- Icône ADLIL superposée au centre -->
+            <img src="icon-192.png" alt="ADLIL"
+                 style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                        width:40px; height:40px; border-radius:8px;
+                        box-shadow:0 2px 6px rgba(0,0,0,0.3);"
+                 onerror="this.style.display='none'">
+        </div>
+        <p style="font-size:0.8rem; color:#aaa; margin-top:8px;">https://yb677.github.io/mon-app/</p>
+    </div>
 </div>
 
     <!-- Écran Succès -->
@@ -175,6 +193,7 @@
         <div class="nav-item" onclick="showView('welcome')">🏠 الرئيسية</div>
         <div class="nav-item" onclick="showView('app')">📝 معلوماتي</div>
         <div class="nav-item" onclick="showView('qr')">🖼️ رمز QR</div>
+        <div id="nav-version" style="position:absolute; bottom:16px; width:100%; text-align:center; font-size:0.75rem; color:#bbb;"></div>
     </nav>
 
     <div class="app-container" id="mainApp">
