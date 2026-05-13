@@ -217,7 +217,7 @@ function buildQRData(accompList) {
     const telephone = d.telephone || '';
     const nom       = d.nom       || '';
     const prenom    = d.prenom    || '';
-    const partieClaire = [telephone, nom, prenom].join('#');
+    const partieClaire = [nom, prenom, telephone].join('#');
 
     // ── Accompagnants : index séparés par virgule (remplace '/') ──
     const accompStr = accompList && accompList.length > 0
@@ -264,7 +264,7 @@ function buildQRData(accompList) {
     ].join('#') + familleStr;
 
     const partieScrambled = scramble(partieScrambledRaw);
-    const checksum = calculateChecksum('ybm' + nom + prenom + telephone + '#');
+    const checksum = calculateChecksum('ybm' + nom + prenom + telephone); // + '#');
 
     return checksum + '#' + partieClaire + '#' + partieScrambled;
 }
@@ -470,7 +470,7 @@ function renderFamille() {
         cDiv.innerHTML = `
             <legend>
                 ${label}
-                ${!hasEnfants ? `<button type="button" class="btn-trash" onclick="removeConjoint('${conjoint.id}')" title="حذف">🗑</button>` : ''}
+                ${!hasEnfants ? `<button type="button" class="btn-trash" onclick="removeConjoint('${conjoint.id}')" title="crcssذف">🗑</button>` : ''}
             </legend>
             <div class="field-row">
                 <div class="field-group">
