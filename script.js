@@ -736,7 +736,7 @@ async function testFCM() {
             serviceWorkerRegistration: registration
         });
 
-        //console.log('✅ TOKEN FCM :', token);
+        console.log('✅ TOKEN FCM :', token);
         alert("4 - TOKEN FCM :\n\n" + token);
     } catch (err) {
         //console.error('❌ Erreur FCM :', err);
