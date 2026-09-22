@@ -734,8 +734,6 @@ async function testFCM() {
             serviceWorkerRegistration: registration
         });
 
-        await messaging.subscribeToTopic('test-fcm');
-
         console.log('✅ TOKEN FCM :', token);
         alert("TOKEN FCM :\n\n" + token);
     } catch (err) {
