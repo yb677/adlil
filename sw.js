@@ -1,6 +1,17 @@
 // ─── VERSION ────────────────────────────────────────────────────────────────
 // Changez uniquement ce numéro à chaque déploiement.
 // Le navigateur détectera la différence et déclenchera la mise à jour.
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+firebase.initializeApp({
+    apiKey: "AIzaSyCOC38yLL-m9Zzd1k8fkjkrrinsX7ZEokg",
+    authDomain: "adlil-fb5df.firebaseapp.com",
+    projectId: "adlil-fb5df",
+    storageBucket: "adlil-fb5df.firebasestorage.app",
+    messagingSenderId: "178895455937",
+    appId: "1:178895455937:web:90d03218b3f78e0d67f640"
+});
+const messaging = firebase.messaging();
 const CACHE_VERSION = 12;
 const CACHE_NAME = `mon-app-v${CACHE_VERSION}`;
 
