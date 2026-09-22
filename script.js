@@ -725,8 +725,11 @@ async function testFCM() {
             return;
         }
 
+        const registration = await navigator.serviceWorker.ready;
+
         const token = await messaging.getToken({
-            vapidKey: 'BPjhdG-Dm7svZ-boXobNX1cxRtDae-2WruRMynUsLCEf3qJ-RbF91BUSVhHhtPxBew7NHASQgdv4CD1-a7ROcM0'
+            vapidKey: 'BPjhdG-Dm7svZ-boXobNX1cxRtDae-2WruRMynUsLCEf3qJ-RbF91BUSVhHhtPxBew7NHASQgdv4CD1-a7ROcM0',
+            serviceWorkerRegistration: registration
         });
 
         console.log('✅ TOKEN FCM :', token);
