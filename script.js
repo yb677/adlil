@@ -717,6 +717,8 @@ function markRead(id) {
 }
 
 async function testFCM() {
+        alert("testFCM démarre");
+
     try {
         const permission = await Notification.requestPermission();
 
