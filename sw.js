@@ -91,3 +91,15 @@ self.addEventListener('fetch', (e) => {
             .then(cached => cached || fetch(e.request))
     );
 });
+
+messaging.onBackgroundMessage((payload) => {
+    console.log("Message reçu en arrière-plan :", payload);
+
+    self.registration.showNotification(
+        payload.notification?.title || "ADLIL",
+        {
+            body: payload.notification?.body || "",
+            icon: './icon-192.png'
+        }
+    );
+});
