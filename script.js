@@ -717,7 +717,7 @@ function markRead(id) {
 }
 
 async function testFCM() {
-        alert("testFCM démarre");
+        alert("testFCM démarre ...");
 
     try {
         const permission = await Notification.requestPermission();
@@ -735,7 +735,7 @@ async function testFCM() {
         });
 
         console.log('✅ TOKEN FCM :', token);
-        alert("TOKEN FCM :----\n\n" + token);
+        alert("TOKEN FCM :\n\n" + token);
     } catch (err) {
         console.error('❌ Erreur FCM :', err);
         alert("ERREUR FCM :\n\n" + err);
