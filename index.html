@@ -129,7 +129,7 @@
          style="width:100px; height:100px; border-radius:22px;
                 box-shadow:0 4px 15px rgba(0,0,0,0.15); margin-bottom:16px;"
          onerror="this.style.display='none'">
-    <h1 style="direction:rtl; font-size:1.4rem; margin-bottom: 30px;">مرحبا بك في تطبيق أدليل</h1>
+    <h1 style="direction:rtl; font-size:1.4rem; margin-bottom: 30px;">.مرحبا بك في تطبيق أدليل</h1>
     
     <!-- Message pour Android -->
     <div id="msg-android" style="display:none;">
@@ -394,6 +394,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 
     <script>
     const firebaseConfig = {
@@ -406,6 +407,7 @@
     };
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
+      const messaging = firebase.messaging();
     </script>
 
     <script src="qrcode.min.js"></script>
