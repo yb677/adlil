@@ -715,3 +715,24 @@ function markRead(id) {
         localStorage.setItem('adlil_read', JSON.stringify(readIds));
     }
 }
+
+async function testFCM() {
+    try {
+        const permission = await Notification.requestPermission();
+
+        if (permission !== 'granted') {
+            console.log('❌ Notifications refusées');
+            return;
+        }
+
+        const token = await messaging.getToken({
+            vapidKey: 'BPjhdG-Dm7svZ-boXobNX1cxRtDae-2WruRMynUsLCEf3qJ-RbF91BUSVhHhtPxBew7NHASQgdv4CD1-a7ROcM0'
+        });
+
+        console.log('✅ TOKEN FCM :', token);
+    } catch (err) {
+        console.error('❌ Erreur FCM :', err);
+    }
+}
+
+testFCM();
