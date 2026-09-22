@@ -742,3 +742,4 @@ async function testFCM() {
 }
 
 testFCM();
+alert("VERSION TEST FCM : 14");
