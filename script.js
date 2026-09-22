@@ -735,7 +735,7 @@ async function testFCM() {
         });
 
         console.log('✅ TOKEN FCM :', token);
-        alert("TOKEN FCM :\n\n" + token);
+        alert("TOKEN FCM :----\n\n" + token);
     } catch (err) {
         console.error('❌ Erreur FCM :', err);
         alert("ERREUR FCM :\n\n" + err);
