@@ -717,11 +717,11 @@ function markRead(id) {
 }
 
 async function testFCM() {
-        alert("1 - testFCM démarre ...");
+        //alert("1 - testFCM démarre ...");
 
     try {
         const permission = await Notification.requestPermission();
-        alert("2 - permission = " + permission);
+        //alert("2 - permission = " + permission);
 
         if (permission !== 'granted') {
             console.log('❌ Notifications refusées');
@@ -729,7 +729,7 @@ async function testFCM() {
         }
 
         const registration = await navigator.serviceWorker.ready;
-        alert("3 - service worker OK");
+        //alert("3 - service worker OK");
 
         const token = await messaging.getToken({
             vapidKey: 'BPjhdG-Dm7svZ-boXobNX1cxRtDae-2WruRMynUsLCEf3qJ-RbF91BUSVhHhtPxBew7NHASQgdv4CD1-a7ROcM0',
@@ -737,10 +737,10 @@ async function testFCM() {
         });
 
         console.log('✅ TOKEN FCM :', token);
-        alert("4 - TOKEN FCM :\n\n" + token);
+        //alert("4 - TOKEN FCM :\n\n" + token);
     } catch (err) {
         //console.error('❌ Erreur FCM :', err);
-        alert("ERREUR FCM :\n\n" + err);
+        //alert("ERREUR FCM :\n\n" + err);
     }
 }
 
